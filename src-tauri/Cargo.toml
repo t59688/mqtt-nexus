@@ -1,0 +1,32 @@
+[package]
+name = "mqtt-nexus"
+version = "0.1.0"
+description = "NexusMQTT desktop app"
+authors = ["AIZEEK"]
+license = "MIT"
+edition = "2024"
+rust-version = "1.85"
+
+[lib]
+name = "mqtt_nexus_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.3.1", features = [] }
+
+[dependencies]
+anyhow = "1.0"
+dashmap = "6.1"
+rig-core = "0.30.0"
+rfd = "0.15.4"
+rumqttc = { version = "0.25.1", features = ["websocket"] }
+rusqlite = { version = "0.32.1", features = ["bundled"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tauri = { version = "2.10.2", features = [] }
+thiserror = "2.0"
+tokio = { version = "1.48", features = ["sync", "time", "rt-multi-thread", "macros"] }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

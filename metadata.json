@@ -1,0 +1,5 @@
+{
+  "name": "NexusMQTT",
+  "description": "A professional-grade, multi-connection MQTT client for the web. Features real-time messaging, connection management, topic subscription handling, and AI-powered payload generation.",
+  "requestFramePermissions": []
+}

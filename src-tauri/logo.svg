@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 背景：深色，高对比 -->
+  <rect width="100" height="100" rx="20" fill="#111111" />
+
+  <!-- 中心节点：亮色主体 -->
+  <circle cx="50" cy="50" r="12" fill="#00ffe0" />
+  
+  <!-- 辐射环（加粗，亮色） -->
+  <circle cx="50" cy="50" r="18" fill="none" stroke="#00ffe0" stroke-width="4" opacity="0.8"/>
+  <circle cx="50" cy="50" r="28" fill="none" stroke="#00ffe0" stroke-width="4" opacity="0.6"/>
+  <circle cx="50" cy="50" r="38" fill="none" stroke="#00ffe0" stroke-width="4" opacity="0.4"/>
+
+  <!-- 连接线及端点（加粗） -->
+  <line x1="50" y1="50" x2="50" y2="12" stroke="#00ffe0" stroke-width="4" />
+  <circle cx="50" cy="12" r="6" fill="#00ffe0" />
+
+  <line x1="50" y1="50" x2="82" y2="32" stroke="#00ffe0" stroke-width="4" />
+  <circle cx="82" cy="32" r="6" fill="#00ffe0" />
+  
+  <line x1="50" y1="50" x2="18" y2="78" stroke="#00ffe0" stroke-width="4" />
+  <circle cx="18" cy="78" r="6" fill="#00ffe0" />
+</svg>
