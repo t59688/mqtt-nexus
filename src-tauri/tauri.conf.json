@@ -12,12 +12,33 @@
   "app": {
     "windows": [
       {
+        "label": "splashscreen",
         "title": "NexusMQTT",
-        "width": 1400,
+        "url": "splashscreen.html",
+        "width": 620,
+        "height": 420,
+        "center": true,
+        "resizable": false,
+        "maximizable": false,
+        "minimizable": false,
+        "closable": false,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "javascriptDisabled": true,
+        "backgroundColor": "#070D18"
+      },
+      {
+        "label": "main",
+        "title": "NexusMQTT",
+        "create": false,
+        "width": 1500,
         "height": 920,
         "minWidth": 1100,
         "minHeight": 700,
-        "resizable": true
+        "resizable": true,
+        "visible": false,
+        "backgroundColor": "#0B1424"
       }
     ],
     "security": {

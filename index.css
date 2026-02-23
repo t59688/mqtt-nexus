@@ -8,6 +8,18 @@
   --border-1: #e2e8f0;
   --border-2: #cbd5e1;
   --ring: #6366f1;
+  --startup-accent: #6366f1;
+  --startup-accent-2: #06b6d4;
+  --startup-brand-start: #6366f1;
+  --startup-brand-end: #7c3aed;
+  --startup-card-border: rgba(148, 163, 184, 0.28);
+  --startup-card-bg: rgba(255, 255, 255, 0.76);
+  --startup-title: #172554;
+  --startup-subtle: #475569;
+  --startup-track: rgba(148, 163, 184, 0.28);
+  --startup-shadow:
+    0 30px 80px rgba(29, 78, 216, 0.14),
+    0 1px 0 rgba(255, 255, 255, 0.72) inset;
 }
 
 html[data-theme='dark'] {
@@ -20,6 +32,18 @@ html[data-theme='dark'] {
   --border-1: #26344f;
   --border-2: #32486a;
   --ring: #5f8dff;
+  --startup-accent: #7ea1ff;
+  --startup-accent-2: #18d4d9;
+  --startup-brand-start: #6366f1;
+  --startup-brand-end: #7c3aed;
+  --startup-card-border: rgba(91, 130, 188, 0.34);
+  --startup-card-bg: rgba(10, 20, 38, 0.7);
+  --startup-title: #e5efff;
+  --startup-subtle: #99afd2;
+  --startup-track: rgba(81, 111, 161, 0.35);
+  --startup-shadow:
+    0 30px 90px rgba(4, 11, 24, 0.8),
+    0 1px 0 rgba(181, 213, 255, 0.07) inset;
 }
 
 body {
@@ -32,6 +56,136 @@ html[data-theme='dark'] body {
     radial-gradient(1200px 600px at 0% 0%, rgba(64, 124, 255, 0.12), transparent 60%),
     radial-gradient(900px 500px at 100% 100%, rgba(0, 167, 199, 0.09), transparent 65%),
     var(--app-bg);
+}
+
+.startup-screen,
+.startup-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(880px 560px at 12% 6%, rgba(79, 122, 230, 0.16), transparent 64%),
+    radial-gradient(840px 540px at 90% 92%, rgba(20, 154, 179, 0.12), transparent 68%),
+    var(--app-bg);
+}
+
+html[data-theme='dark'] .startup-screen,
+html[data-theme='dark'] .startup-splash {
+  background:
+    radial-gradient(880px 560px at 12% 6%, rgba(79, 122, 230, 0.2), transparent 64%),
+    radial-gradient(840px 540px at 90% 92%, rgba(20, 154, 179, 0.14), transparent 68%),
+    var(--app-bg);
+}
+
+.startup-screen--app {
+  z-index: 20;
+}
+
+.startup-splash.startup-splash--leave {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.32s ease,
+    visibility 0.32s ease;
+}
+
+.startup-card {
+  width: min(428px, 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: var(--startup-card-bg);
+  backdrop-filter: blur(12px);
+  padding: 24px 22px 20px;
+  box-shadow: 0 20px 56px rgba(2, 10, 24, 0.14);
+}
+
+html[data-theme='dark'] .startup-card {
+  border-color: rgba(74, 104, 150, 0.42);
+  box-shadow: 0 20px 56px rgba(2, 10, 24, 0.56);
+}
+
+.startup-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.startup-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(115, 146, 196, 0.42);
+  box-shadow: 0 10px 24px rgba(84, 105, 255, 0.3);
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+.startup-mark img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.startup-name {
+  font-size: 18px;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  font-weight: 700;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--startup-title);
+}
+
+.startup-progress-track {
+  margin-top: 16px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.32);
+  overflow: hidden;
+}
+
+html[data-theme='dark'] .startup-progress-track {
+  background: rgba(92, 124, 173, 0.32);
+}
+
+.startup-progress-fill {
+  height: 100%;
+  width: 32%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--startup-accent), var(--startup-brand-end) 60%, var(--startup-accent-2));
+  box-shadow: 0 0 16px rgba(95, 141, 255, 0.5);
+  animation: startup-glide 1.24s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+.startup-progress-fill--determinate {
+  width: 0;
+  animation: none;
+  transition: width 0.35s ease;
+}
+
+@keyframes startup-glide {
+  from {
+    transform: translateX(-72%);
+  }
+  to {
+    transform: translateX(272%);
+  }
+}
+
+@media (max-width: 560px) {
+  .startup-screen,
+  .startup-splash {
+    padding: 16px;
+  }
+
+  .startup-card {
+    width: min(428px, 100%);
+    padding: 20px 18px 18px;
+  }
 }
 
 html[data-theme='dark'] .bg-white {

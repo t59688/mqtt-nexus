@@ -1,5 +1,8 @@
 import { ConnectionProfile, BrokerConfig, AuthIdentity, AiConfig } from './types';
 
+export const STORAGE_THEME_KEY = 'mqtt-nexus:theme';
+export const STORAGE_LANGUAGE_KEY = 'mqtt-nexus:language';
+
 export const DEFAULT_BROKER: BrokerConfig = {
   id: '',
   name: 'EMQX Public',

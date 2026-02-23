@@ -9,7 +9,7 @@ use crate::state::AppState;
 use rfd::FileDialog;
 use std::fs;
 use std::path::PathBuf;
-use tauri::State;
+use tauri::{Manager, State};
 
 #[tauri::command(rename_all = "camelCase")]
 pub async fn mqtt_connect(
@@ -104,6 +104,20 @@ pub async fn load_app_config(app: tauri::AppHandle) -> Result<NativeAppConfig, S
 #[tauri::command(rename_all = "camelCase")]
 pub async fn save_app_config(app: tauri::AppHandle, config: NativeAppConfig) -> Result<(), String> {
     config_store::save_config(&app, &config).map_err(|e| e.to_string())
+}
+
+#[tauri::command(rename_all = "camelCase")]
+pub async fn app_ready(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(main_window) = app.get_webview_window("main") {
+        main_window.show().map_err(|e| e.to_string())?;
+        let _ = main_window.set_focus();
+    }
+
+    if let Some(splash_window) = app.get_webview_window("splashscreen") {
+        let _ = splash_window.close();
+    }
+
+    Ok(())
 }
 
 #[tauri::command(rename_all = "camelCase")]

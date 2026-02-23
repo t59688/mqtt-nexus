@@ -18,7 +18,13 @@ import {
   TopicCatalogItem,
   TopicDirection,
 } from './types';
-import { DEFAULT_PROFILE, DEFAULT_AI_CONFIG, getRandomColor } from './constants';
+import {
+  DEFAULT_PROFILE,
+  DEFAULT_AI_CONFIG,
+  STORAGE_LANGUAGE_KEY,
+  STORAGE_THEME_KEY,
+  getRandomColor,
+} from './constants';
 import { invokeCommand, isTauriRuntime, listenEvent } from './services/tauriBridge';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from './i18n';
 import ConnectionModal from './components/ConnectionModal';
@@ -57,6 +63,7 @@ interface MqttBatchEvent {
 
 type ThemeMode = 'light' | 'dark';
 type NoticeTone = 'info' | 'success' | 'error';
+type StartupPhase = 'boot' | 'loadConfig' | 'restoreWorkspace' | 'finalize';
 
 interface ToastNotice {
   id: string;
@@ -207,6 +214,29 @@ const trimMessageWindow = (messages: Message[], keepFrom: 'start' | 'end') => {
   return messages.slice(0, MAX_LOG_VIEW_MESSAGES);
 };
 
+const listConnections = (value: Record<string, ConnectionState>): ConnectionState[] =>
+  Object.values(value) as ConnectionState[];
+
+const getInitialTheme = (): ThemeMode => {
+  if (typeof window === 'undefined') {
+    return 'light';
+  }
+
+  try {
+    const savedTheme = window.localStorage.getItem(STORAGE_THEME_KEY);
+    if (savedTheme === 'dark' || savedTheme === 'light') {
+      return savedTheme;
+    }
+  } catch (error) {
+    console.warn('Failed to read cached theme preference', error);
+  }
+
+  if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) {
+    return 'dark';
+  }
+  return 'light';
+};
+
 const App: React.FC = () => {
   const { t, i18n } = useTranslation();
   const [connections, setConnections] = useState<Record<string, ConnectionState>>({});
@@ -225,10 +255,12 @@ const App: React.FC = () => {
   const [editingProfile, setEditingProfile] = useState<ConnectionProfile | undefined>(undefined);
   const [connectionSearch, setConnectionSearch] = useState('');
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
-  const [theme, setTheme] = useState<ThemeMode>('light');
+  const [theme, setTheme] = useState<ThemeMode>(() => getInitialTheme());
   const [publisherTemplates, setPublisherTemplates] = useState<PayloadTemplate[]>([]);
   const [connectionTopicDocs, setConnectionTopicDocs] = useState<Record<string, ConnectionTopicDocument>>({});
   const [isConfigLoaded, setIsConfigLoaded] = useState(false);
+  const [startupPhase, setStartupPhase] = useState<StartupPhase>('boot');
+  const [startupProgress, setStartupProgress] = useState(8);
   const [configPaths, setConfigPaths] = useState<AppConfigPaths | null>(null);
   const [toasts, setToasts] = useState<ToastNotice[]>([]);
   const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState | null>(null);
@@ -457,8 +489,11 @@ const App: React.FC = () => {
 
     const loadConfig = async () => {
       try {
+        setStartupPhase('loadConfig');
         if (!isTauriRuntime()) {
+          setStartupPhase('restoreWorkspace');
           applyProfiles([]);
+          setStartupPhase('finalize');
           return;
         }
 
@@ -483,10 +518,14 @@ const App: React.FC = () => {
           void i18n.changeLanguage(loaded.language as SupportedLanguage);
         }
 
+        setStartupPhase('restoreWorkspace');
         applyProfiles(loadedProfiles, loaded.activeConnectionId);
+        setStartupPhase('finalize');
       } catch (error) {
         console.error('Failed to load app config', error);
+        setStartupPhase('restoreWorkspace');
         applyProfiles([]);
+        setStartupPhase('finalize');
       } finally {
         if (!cancelled) {
           setIsConfigLoaded(true);
@@ -499,6 +538,33 @@ const App: React.FC = () => {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (isConfigLoaded) {
+      setStartupProgress(100);
+      return;
+    }
+
+    const phaseTarget: Record<StartupPhase, number> = {
+      boot: 18,
+      loadConfig: 52,
+      restoreWorkspace: 80,
+      finalize: 94,
+    };
+
+    const target = phaseTarget[startupPhase];
+    const timer = window.setInterval(() => {
+      setStartupProgress((prev) => {
+        if (prev >= target) {
+          return prev;
+        }
+        const step = Math.max(1, Math.ceil((target - prev) / 7));
+        return Math.min(target, prev + step);
+      });
+    }, 90);
+
+    return () => window.clearInterval(timer);
+  }, [isConfigLoaded, startupPhase]);
 
   useEffect(() => {
     if (!isTauriRuntime()) {
@@ -531,7 +597,20 @@ const App: React.FC = () => {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    try {
+      window.localStorage.setItem(STORAGE_THEME_KEY, theme);
+    } catch (error) {
+      console.warn('Failed to cache theme preference', error);
+    }
   }, [theme]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(STORAGE_LANGUAGE_KEY, currentLanguage);
+    } catch (error) {
+      console.warn('Failed to cache language preference', error);
+    }
+  }, [currentLanguage]);
 
   useEffect(() => () => {
     toastTimersRef.current.forEach((timer) => window.clearTimeout(timer));
@@ -546,7 +625,7 @@ const App: React.FC = () => {
     }
 
     const config: NativeAppConfig = {
-      connections: Object.values(connections).map((c) => c.profile),
+      connections: listConnections(connections).map((c) => c.profile),
       brokers,
       identities,
       aiConfig,
@@ -789,7 +868,7 @@ const App: React.FC = () => {
   const exportConfig = async () => {
     const data: ImportPayload = {
       magic: APP_CONFIG_MAGIC,
-      connections: Object.values(connections).map((c) => c.profile),
+      connections: listConnections(connections).map((c) => c.profile),
       brokers,
       identities,
       aiConfig,
@@ -1244,7 +1323,7 @@ const App: React.FC = () => {
 
   const getGroupedConnections = () => {
     const groups: Record<string, ConnectionState[]> = {};
-    Object.values(connections).forEach((c) => {
+    listConnections(connections).forEach((c) => {
       if (
         connectionSearch &&
         !c.profile.name.toLowerCase().includes(connectionSearch.toLowerCase()) &&
@@ -1258,9 +1337,28 @@ const App: React.FC = () => {
     return groups;
   };
 
+  if (!isConfigLoaded) {
+    const shownProgress = Math.max(6, Math.min(99, Math.round(startupProgress)));
+    return (
+      <div className="startup-screen startup-screen--app" role="status" aria-live="polite" aria-label="Loading">
+        <div className="startup-card">
+          <div className="startup-head" aria-hidden="true">
+            <div className="startup-mark">
+              <img src="/app-icon.png" alt="" />
+            </div>
+            <div className="startup-name">NexusMQTT</div>
+          </div>
+          <div className="startup-progress-track" aria-hidden="true">
+            <div className="startup-progress-fill startup-progress-fill--determinate" style={{ width: `${shownProgress}%` }}></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const groupedConnections = getGroupedConnections();
   const sortedGroupNames = Object.keys(groupedConnections).sort();
-  const allGroupNames = Array.from(new Set(Object.values(connections).map((c) => c.profile.group || 'General')));
+  const allGroupNames = Array.from(new Set(listConnections(connections).map((c) => c.profile.group || 'General')));
   const welcomeDescriptionLines = t('app.welcomeDescription').split('\n');
   const activeTopicDoc = activeConnection ? connectionTopicDocs[activeConnection.profile.id] : undefined;
 
@@ -1336,9 +1434,7 @@ const App: React.FC = () => {
       <div className={`${sidebarOpen ? 'w-80' : 'w-0 opacity-0'} bg-slate-900 flex flex-col border-r border-slate-800 shrink-0 shadow-2xl z-20 transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap`}>
         <div className="p-5 flex items-center justify-between border-b border-slate-800 bg-slate-950/30">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/20">
-              <i className="fas fa-bolt"></i>
-            </div>
+            <img src="/app-icon.png" alt="" className="w-8 h-8 rounded object-cover shadow-lg shadow-indigo-500/20" />
             <h1 className="text-lg font-bold text-white tracking-tight">NexusMQTT</h1>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="text-slate-500 hover:text-slate-200 transition-colors">
@@ -1462,7 +1558,7 @@ const App: React.FC = () => {
                     }}
                     onToggleMute={(topic) => toggleMute(activeConnection.profile.id, topic)}
                     onGeneratePayload={generatePayload}
-                    onNotify={(message, tone = 'info') => pushToast(message, tone)}
+                    onNotify={(message, tone: NoticeTone = 'info') => pushToast(message, tone)}
                     onImport={() => triggerTopicCatalogImport(activeConnection.profile.id)}
                     onExport={() => exportConnectionTopicCatalog(activeConnection.profile.id)}
                     onConfirmDeleteTopic={confirmDeleteTopic}
