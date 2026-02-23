@@ -241,6 +241,12 @@
     formatJson: '格式化 JSON',
     publishTemplate: '发送模板',
     publishExample: '发送示例',
+    contextMenu: {
+      subscribe: '订阅',
+      unsubscribe: '取消订阅',
+      publishExample: '发送示例',
+      publishTemplate: '发送模板',
+    },
     activeSubscriptions: '当前订阅',
     topicRequired: '主题不能为空。',
     payloadRequired: 'Payload 不能为空。',

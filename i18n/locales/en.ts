@@ -242,6 +242,12 @@
     formatJson: 'Format JSON',
     publishTemplate: 'Publish Template',
     publishExample: 'Publish Example',
+    contextMenu: {
+      subscribe: 'Subscribe',
+      unsubscribe: 'Unsubscribe',
+      publishExample: 'Publish Example',
+      publishTemplate: 'Publish Template',
+    },
     activeSubscriptions: 'Active Subscriptions',
     topicRequired: 'Topic is required.',
     payloadRequired: 'Payload is required.',

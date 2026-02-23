@@ -26,6 +26,21 @@ interface TopicWorkbenchProps {
 
 const TOPIC_DOC_VERSION = '1.0';
 
+interface TopicContextMenuState {
+  x: number;
+  y: number;
+  topicId: string;
+}
+
+interface TopicContextMenuAction {
+  key: string;
+  label: string;
+  icon: string;
+  group: 'sub' | 'pub';
+  disabled?: boolean;
+  onClick: () => void;
+}
+
 const createDefaultTopic = (): TopicCatalogItem => ({
   id: crypto.randomUUID(),
   name: 'New Topic',
@@ -42,6 +57,30 @@ const createDefaultTopic = (): TopicCatalogItem => ({
 });
 
 const directionOrder: Array<'all' | TopicDirection> = ['all', 'publish', 'subscribe', 'both'];
+
+const canSubscribeDirection = (direction: TopicDirection): boolean =>
+  direction === 'subscribe' || direction === 'both';
+
+const canPublishDirection = (direction: TopicDirection): boolean =>
+  direction === 'publish' || direction === 'both';
+
+const clampMenuPosition = (
+  x: number,
+  y: number,
+  actionCount: number,
+  estimatedMenuWidth: number
+) => {
+  if (typeof window === 'undefined') {
+    return { left: x, top: y };
+  }
+  const menuWidth = estimatedMenuWidth;
+  const menuHeight = Math.max(44, 10 + actionCount * 34);
+  const edge = 8;
+  return {
+    left: Math.max(edge, Math.min(x, window.innerWidth - menuWidth - edge)),
+    top: Math.max(edge, Math.min(y, window.innerHeight - menuHeight - edge)),
+  };
+};
 
 const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
   connectionId,
@@ -64,6 +103,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
   const [directionFilter, setDirectionFilter] = useState<'all' | TopicDirection>('all');
   const [activeTopicId, setActiveTopicId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [topicContextMenu, setTopicContextMenu] = useState<TopicContextMenuState | null>(null);
 
   const topics = document?.topics || [];
   const subscriptionSet = useMemo(() => new Set(subscriptions.map((sub) => sub.topic)), [subscriptions]);
@@ -86,9 +126,12 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
   }, [topics, directionFilter, search]);
 
   const activeTopic = topics.find((item) => item.id === activeTopicId) || null;
-  const canSubscribe = activeTopic?.direction === 'subscribe' || activeTopic?.direction === 'both';
-  const canPublish = activeTopic?.direction === 'publish' || activeTopic?.direction === 'both';
+  const canSubscribe = activeTopic ? canSubscribeDirection(activeTopic.direction) : false;
+  const canPublish = activeTopic ? canPublishDirection(activeTopic.direction) : false;
   const isSubscribed = Boolean(activeTopic && subscriptionSet.has(activeTopic.topic));
+  const contextMenuTopic = topicContextMenu
+    ? topics.find((item) => item.id === topicContextMenu.topicId) || null
+    : null;
 
   useEffect(() => {
     if (topics.length === 0) {
@@ -99,6 +142,35 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
       setActiveTopicId(topics[0].id);
     }
   }, [connectionId, topics, activeTopicId]);
+
+  useEffect(() => {
+    if (!topicContextMenu) {
+      return;
+    }
+
+    const dismiss = () => setTopicContextMenu(null);
+    const dismissOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        dismiss();
+      }
+    };
+
+    window.addEventListener('click', dismiss);
+    window.addEventListener('keydown', dismissOnEscape);
+    return () => {
+      window.removeEventListener('click', dismiss);
+      window.removeEventListener('keydown', dismissOnEscape);
+    };
+  }, [topicContextMenu]);
+
+  useEffect(() => {
+    if (!topicContextMenu) {
+      return;
+    }
+    if (!topics.some((item) => item.id === topicContextMenu.topicId)) {
+      setTopicContextMenu(null);
+    }
+  }, [topics, topicContextMenu]);
 
   const persistTopics = (nextTopics: TopicCatalogItem[]) => {
     onDocumentChange(connectionId, {
@@ -154,43 +226,75 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
     }
   };
 
-  const publishFromField = (field: 'payloadTemplate' | 'payloadExample') => {
-    if (!activeTopic) {
+  const publishTopicFromField = (
+    topicItem: TopicCatalogItem,
+    field: 'payloadTemplate' | 'payloadExample'
+  ) => {
+    if (!canPublishDirection(topicItem.direction)) {
       return;
     }
     if (!isConnected) {
       onNotify?.(t('topicWorkbench.connectRequired'), 'error');
       return;
     }
-    if (!activeTopic.topic.trim()) {
+    if (!topicItem.topic.trim()) {
       onNotify?.(t('topicWorkbench.topicRequired'), 'error');
       return;
     }
-    const payload = (activeTopic[field] || '').trim();
+    const payload = (topicItem[field] || '').trim();
     if (!payload) {
       onNotify?.(t('topicWorkbench.payloadRequired'), 'error');
       return;
     }
-    onPublish(activeTopic.topic, payload, activeTopic.qos, activeTopic.retain);
+    onPublish(topicItem.topic, payload, topicItem.qos, topicItem.retain);
+  };
+
+  const subscribeTopic = (topicItem: TopicCatalogItem) => {
+    if (!canSubscribeDirection(topicItem.direction)) {
+      return;
+    }
+    if (!isConnected) {
+      onNotify?.(t('topicWorkbench.connectRequired'), 'error');
+      return;
+    }
+    if (!topicItem.topic.trim()) {
+      onNotify?.(t('topicWorkbench.topicRequired'), 'error');
+      return;
+    }
+    onSubscribe(topicItem.topic, topicItem.qos);
+  };
+
+  const unsubscribeTopic = (topicItem: TopicCatalogItem) => {
+    if (!canSubscribeDirection(topicItem.direction)) {
+      return;
+    }
+    if (!isConnected) {
+      onNotify?.(t('topicWorkbench.connectRequired'), 'error');
+      return;
+    }
+    if (!topicItem.topic.trim()) {
+      onNotify?.(t('topicWorkbench.topicRequired'), 'error');
+      return;
+    }
+    onUnsubscribe(topicItem.topic);
+  };
+
+  const publishFromField = (field: 'payloadTemplate' | 'payloadExample') => {
+    if (!activeTopic) {
+      return;
+    }
+    publishTopicFromField(activeTopic, field);
   };
 
   const toggleSubscribe = () => {
     if (!activeTopic || !canSubscribe) {
       return;
     }
-    if (!isConnected) {
-      onNotify?.(t('topicWorkbench.connectRequired'), 'error');
-      return;
-    }
-    if (!activeTopic.topic.trim()) {
-      onNotify?.(t('topicWorkbench.topicRequired'), 'error');
-      return;
-    }
     if (isSubscribed) {
-      onUnsubscribe(activeTopic.topic);
+      unsubscribeTopic(activeTopic);
       return;
     }
-    onSubscribe(activeTopic.topic, activeTopic.qos);
+    subscribeTopic(activeTopic);
   };
 
   const normalizeJsonField = (field: 'payloadTemplate' | 'payloadExample' | 'schema') => {
@@ -208,6 +312,73 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
       onNotify?.(t('topicWorkbench.invalidJson'), 'error');
     }
   };
+
+  const topicContextActions: TopicContextMenuAction[] = [];
+  if (contextMenuTopic) {
+    const contextTopicSubscribed = subscriptionSet.has(contextMenuTopic.topic);
+    if (canSubscribeDirection(contextMenuTopic.direction)) {
+      topicContextActions.push(
+        {
+          key: 'subscribe',
+          label: t('topicWorkbench.contextMenu.subscribe'),
+          icon: 'fa-rss',
+          group: 'sub',
+          disabled: !isConnected || !contextMenuTopic.topic.trim(),
+          onClick: () => subscribeTopic(contextMenuTopic),
+        },
+        {
+          key: 'unsubscribe',
+          label: t('topicWorkbench.contextMenu.unsubscribe'),
+          icon: 'fa-eye-slash',
+          group: 'sub',
+          disabled: !isConnected || !contextMenuTopic.topic.trim() || !contextTopicSubscribed,
+          onClick: () => unsubscribeTopic(contextMenuTopic),
+        }
+      );
+    }
+    if (canPublishDirection(contextMenuTopic.direction)) {
+      topicContextActions.push(
+        {
+          key: 'publishExample',
+          label: t('topicWorkbench.contextMenu.publishExample'),
+          icon: 'fa-vial',
+          group: 'pub',
+          disabled:
+            !isConnected || !contextMenuTopic.topic.trim() || !(contextMenuTopic.payloadExample || '').trim(),
+          onClick: () => publishTopicFromField(contextMenuTopic, 'payloadExample'),
+        },
+        {
+          key: 'publishTemplate',
+          label: t('topicWorkbench.contextMenu.publishTemplate'),
+          icon: 'fa-paper-plane',
+          group: 'pub',
+          disabled:
+            !isConnected || !contextMenuTopic.topic.trim() || !(contextMenuTopic.payloadTemplate || '').trim(),
+          onClick: () => publishTopicFromField(contextMenuTopic, 'payloadTemplate'),
+        }
+      );
+    }
+  }
+
+  const estimatedMenuWidth = Math.min(
+    240,
+    Math.max(
+      92,
+      72 +
+        topicContextActions.reduce((max, action) => {
+          return Math.max(max, action.label.length * 7.2);
+        }, 0)
+    )
+  );
+
+  const topicMenuPosition = topicContextMenu
+    ? clampMenuPosition(
+        topicContextMenu.x,
+        topicContextMenu.y,
+        topicContextActions.length,
+        estimatedMenuWidth
+      )
+    : null;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 h-full overflow-hidden flex flex-col">
@@ -278,7 +449,20 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
               {filteredTopics.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTopicId(item.id)}
+                  onClick={() => {
+                    setActiveTopicId(item.id);
+                    setTopicContextMenu(null);
+                  }}
+                  onContextMenu={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setActiveTopicId(item.id);
+                    setTopicContextMenu({
+                      x: event.clientX,
+                      y: event.clientY,
+                      topicId: item.id,
+                    });
+                  }}
                   className={`w-full text-left p-2 rounded-lg border transition-all ${
                     item.id === activeTopic?.id
                       ? 'border-indigo-300 bg-indigo-50/70'
@@ -533,6 +717,55 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
           )}
         </div>
       </div>
+
+      {topicContextMenu && contextMenuTopic && topicContextActions.length > 0 && topicMenuPosition && (
+        <div
+          className="fixed z-[70] min-w-[140px] w-auto rounded-lg border border-slate-200 bg-white p-1 shadow-2xl shadow-slate-900/15"
+          style={{ left: topicMenuPosition.left, top: topicMenuPosition.top }}
+          onClick={(event) => event.stopPropagation()}
+          onContextMenu={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+          }}
+        >
+          {topicContextActions.map((action, index) => {
+            const needsDivider = index > 0 && action.group !== topicContextActions[index - 1].group;
+            const iconToneClass =
+              action.key === 'unsubscribe'
+                ? 'text-red-500'
+                : action.group === 'sub'
+                  ? 'text-emerald-500'
+                  : action.key === 'publishTemplate'
+                    ? 'text-indigo-500'
+                    : 'text-slate-500';
+
+            return (
+              <button
+                key={action.key}
+                disabled={action.disabled}
+                onClick={() => {
+                  if (action.disabled) {
+                    return;
+                  }
+                  action.onClick();
+                  setTopicContextMenu(null);
+                }}
+                className={`flex items-center gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors w-full ${
+                  needsDivider ? 'mt-1 pt-2 border-t border-slate-100' : ''
+                } ${
+                  action.disabled
+                    ? 'text-slate-300 cursor-not-allowed'
+                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                <span className="w-4 flex-shrink-0 text-[10px] text-slate-400">{index + 1}.</span>
+                <i className={`fas ${action.icon} w-3 flex-shrink-0 text-center ${action.disabled ? 'text-slate-300' : iconToneClass}`}></i>
+                <span className="whitespace-nowrap flex-shrink-0">{action.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
