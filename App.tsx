@@ -672,6 +672,16 @@ const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeId, connections, t, connectionTopicDocs]);
 
+  // 禁用浏览器默认右键菜单
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    window.addEventListener('contextmenu', handleContextMenu);
+    return () => window.removeEventListener('contextmenu', handleContextMenu);
+  }, []);
+
   const activeConnection = activeId ? connections[activeId] : null;
 
   const clearActiveHistory = async () => {
