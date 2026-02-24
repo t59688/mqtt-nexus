@@ -112,7 +112,7 @@ const MessageLog: React.FC<MessageLogProps> = ({
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 h-full flex flex-col overflow-hidden relative">
       {/* Toolbar */}
-      <div className="px-4 py-2 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 gap-4">
+      <div className="px-3 py-1.5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 gap-3">
         <div className="flex items-center gap-3">
             <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
                 <i className="fas fa-list-ul text-blue-500"></i>
@@ -163,7 +163,7 @@ const MessageLog: React.FC<MessageLogProps> = ({
       <div
         ref={listRef}
         onScroll={(event) => { void handleListScroll(event); }}
-        className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/30 custom-scrollbar relative"
+        className="flex-1 overflow-y-auto p-2.5 space-y-2 bg-slate-50/30 custom-scrollbar relative"
       >
         {(hasMoreOlder || isLoadingOlder) && (
           <div className="flex justify-center mb-2">
@@ -185,16 +185,16 @@ const MessageLog: React.FC<MessageLogProps> = ({
             const topicColor = !isOut ? getTopicColor(msg.topic).replace('bg-', 'text-') : 'text-slate-600';
 
             return (
-                <div key={msg.id} className="flex gap-3 animate-in fade-in duration-200">
-                    <div className="flex flex-col items-center pt-1 min-w-[65px]">
+                <div key={msg.id} className="flex gap-2 animate-in fade-in duration-200">
+                    <div className="flex flex-col items-center pt-1 min-w-[58px]">
                         <span className="text-[10px] font-mono text-slate-400 tabular-nums">{formatTime(msg.timestamp)}</span>
                         <div className={`mt-1 px-1.5 py-0.5 rounded-[4px] text-[9px] font-bold uppercase border tracking-wider ${badgeColor}`}>
                             {t(`messageLog.direction.${msg.direction}`)}
                         </div>
                     </div>
                     
-                    <div className={`flex-1 bg-white border border-slate-200 rounded-lg p-2.5 shadow-sm hover:shadow-md transition-shadow ${isOut ? 'rounded-tl-none border-l-2 border-l-indigo-300' : 'rounded-tr-none border-r-2 border-r-emerald-300'}`}>
-                        <div className="flex justify-between items-start mb-1.5">
+                    <div className={`flex-1 bg-white border border-slate-200 rounded-lg p-2 shadow-sm hover:shadow-md transition-shadow ${isOut ? 'rounded-tl-none border-l-2 border-l-indigo-300' : 'rounded-tr-none border-r-2 border-r-emerald-300'}`}>
+                        <div className="flex justify-between items-start mb-1">
                             <span className={`font-mono text-xs font-bold break-all ${topicColor} bg-slate-50 px-1 rounded`}>
                                 {msg.topic}
                             </span>
@@ -203,7 +203,7 @@ const MessageLog: React.FC<MessageLogProps> = ({
                                 {msg.retain && <span className="text-orange-600 bg-orange-50 px-1 rounded font-bold">{t('messageLog.retain')}</span>}
                             </div>
                         </div>
-                        <pre className="text-xs text-slate-700 font-mono whitespace-pre-wrap break-words max-h-48 overflow-y-auto custom-scrollbar bg-slate-50/50 p-2 rounded border border-slate-100">
+                        <pre className="text-xs text-slate-700 font-mono whitespace-pre-wrap break-words max-h-48 overflow-y-auto custom-scrollbar bg-slate-50/50 p-1.5 rounded border border-slate-100">
                             {msg.payload}
                         </pre>
                     </div>

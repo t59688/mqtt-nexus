@@ -383,9 +383,28 @@ fn emit_status(app: &AppHandle, payload: MqttStatusPayload) {
     let _ = app.emit("mqtt-status", payload);
 }
 
+fn build_ws_broker_url(cfg: &ResolvedConnection, secure: bool) -> String {
+    let host_input = cfg.host.trim();
+
+    if host_input.starts_with("ws://") || host_input.starts_with("wss://") {
+        return host_input.to_string();
+    }
+
+    let scheme = if secure { "wss" } else { "ws" };
+    let mut path = cfg.path.trim().to_string();
+    if path.is_empty() {
+        path = "/mqtt".to_string();
+    } else if !path.starts_with('/') {
+        path = format!("/{path}");
+    }
+
+    format!("{scheme}://{host_input}:{}{path}", cfg.port)
+}
+
 fn build_v4_options(cfg: &ResolvedConnection) -> MqttOptions {
     let broker = match cfg.protocol {
-        TransportProtocol::Ws | TransportProtocol::Wss => format!("{}{}", cfg.host, cfg.path),
+        TransportProtocol::Ws => build_ws_broker_url(cfg, false),
+        TransportProtocol::Wss => build_ws_broker_url(cfg, true),
         _ => cfg.host.clone(),
     };
 
@@ -417,7 +436,8 @@ fn build_v4_options(cfg: &ResolvedConnection) -> MqttOptions {
 
 fn build_v5_options(cfg: &ResolvedConnection) -> rumqttc::v5::MqttOptions {
     let broker = match cfg.protocol {
-        TransportProtocol::Ws | TransportProtocol::Wss => format!("{}{}", cfg.host, cfg.path),
+        TransportProtocol::Ws => build_ws_broker_url(cfg, false),
+        TransportProtocol::Wss => build_ws_broker_url(cfg, true),
         _ => cfg.host.clone(),
     };
 

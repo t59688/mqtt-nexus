@@ -183,6 +183,23 @@ const normalizeProfile = (profile: ConnectionProfile): ConnectionProfile => {
   };
 };
 
+const resolveProfileProtocol = (
+  profile: ConnectionProfile,
+  brokers: BrokerConfig[]
+): ConnectionProfile['protocol'] => {
+  if (!profile.brokerId) {
+    return profile.protocol;
+  }
+  return brokers.find((broker) => broker.id === profile.brokerId)?.protocol || profile.protocol;
+};
+
+const protocolBadgeStylesLight: Record<ConnectionProfile['protocol'], string> = {
+  mqtt: 'bg-sky-50 text-sky-700 border-sky-200',
+  mqtts: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  ws: 'bg-amber-50 text-amber-700 border-amber-200',
+  wss: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+};
+
 const appendMessages = (prev: Record<string, ConnectionState>, connectionId: string, newMessages: Message[]): Record<string, ConnectionState> => {
   const conn = prev[connectionId];
   if (!conn || newMessages.length === 0) return prev;
@@ -281,6 +298,8 @@ const App: React.FC = () => {
   const toastTimersRef = useRef<number[]>([]);
   const activityTimersRef = useRef<number[]>([]);
   const activeIdRef = useRef<string | null>(null);
+  const sidebarHotkeyScopeRef = useRef(false);
+  const sidebarCopiedConnectionIdRef = useRef<string | null>(null);
   const currentLanguage: SupportedLanguage = i18n.resolvedLanguage === 'zh' ? 'zh' : 'en';
   const displayGroupName = (groupName: string) => (groupName === 'General' ? t('connectionModal.defaults.defaultGroup') : groupName);
 
@@ -715,41 +734,83 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const handleKeyDown = async (e: KeyboardEvent) => {
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) return;
-      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
-        if (activeId && connections[activeId]) {
-          await navigator.clipboard.writeText(`MQTT_NEXUS_PROFILE:${JSON.stringify(connections[activeId].profile)}`);
-        }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable)
+      ) {
+        return;
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
-        try {
-          const text = await navigator.clipboard.readText();
-          if (!text.startsWith('MQTT_NEXUS_PROFILE:')) return;
-          const profile = normalizeProfile(JSON.parse(text.substring('MQTT_NEXUS_PROFILE:'.length)) as ConnectionProfile);
-          const newId = crypto.randomUUID();
-          handleSaveProfile({
-            ...profile,
-            id: newId,
-            name: `${profile.name} (${t('app.copySuffix')})`,
-            clientId: `nexus-${Math.random().toString(16).substring(2, 10)}`,
-          });
-          const sourceDoc = connectionTopicDocs[profile.id];
-          if (sourceDoc) {
-            setConnectionTopicDocs((prev) => ({
-              ...prev,
-              [newId]: cloneTopicDocument(sourceDoc),
-            }));
-          }
-        } catch (err) {
-          console.error('Paste failed', err);
+
+      const isCopyShortcut = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c';
+      const isPasteShortcut = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v';
+      if (!isCopyShortcut && !isPasteShortcut) {
+        return;
+      }
+
+      const selectedText = window.getSelection()?.toString().trim() ?? '';
+      if (isCopyShortcut && selectedText) {
+        return;
+      }
+
+      if (!sidebarOpen || !sidebarHotkeyScopeRef.current) {
+        return;
+      }
+
+      if (isModalOpen || isSettingsOpen || isAboutOpen || isExportModalOpen || quickAction || confirmDialog) {
+        return;
+      }
+
+      if (isCopyShortcut) {
+        if (activeId && connections[activeId]) {
+          sidebarCopiedConnectionIdRef.current = activeId;
         }
+        return;
+      }
+
+      const copiedId = sidebarCopiedConnectionIdRef.current;
+      if (!copiedId) {
+        return;
+      }
+      const sourceConnection = connections[copiedId];
+      if (!sourceConnection) {
+        return;
+      }
+
+      e.preventDefault();
+      const sourceProfile = sourceConnection.profile;
+      const newId = crypto.randomUUID();
+      handleSaveProfile({
+        ...sourceProfile,
+        id: newId,
+        name: `${sourceProfile.name} (${t('app.copySuffix')})`,
+        clientId: `nexus-${Math.random().toString(16).substring(2, 10)}`,
+      });
+      const sourceDoc = connectionTopicDocs[sourceProfile.id];
+      if (sourceDoc) {
+        setConnectionTopicDocs((prev) => ({
+          ...prev,
+          [newId]: cloneTopicDocument(sourceDoc),
+        }));
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeId, connections, t, connectionTopicDocs]);
+  }, [
+    activeId,
+    connections,
+    t,
+    connectionTopicDocs,
+    sidebarOpen,
+    isModalOpen,
+    isSettingsOpen,
+    isAboutOpen,
+    isExportModalOpen,
+    quickAction,
+    confirmDialog,
+  ]);
 
   // 禁用浏览器默认右键菜单
   useEffect(() => {
@@ -1361,6 +1422,9 @@ const App: React.FC = () => {
   const allGroupNames = Array.from(new Set(listConnections(connections).map((c) => c.profile.group || 'General')));
   const welcomeDescriptionLines = t('app.welcomeDescription').split('\n');
   const activeTopicDoc = activeConnection ? connectionTopicDocs[activeConnection.profile.id] : undefined;
+  const activeProtocol = activeConnection
+    ? resolveProfileProtocol(activeConnection.profile, brokers)
+    : 'mqtt';
 
   return (
     <div className="flex h-screen bg-slate-100 font-sans text-slate-900" onClick={() => setContextMenu(null)}>
@@ -1431,18 +1495,29 @@ const App: React.FC = () => {
         </div>
       )}
 
-      <div className={`${sidebarOpen ? 'w-80' : 'w-0 opacity-0'} bg-slate-900 flex flex-col border-r border-slate-800 shrink-0 shadow-2xl z-20 transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap`}>
-        <div className="p-5 flex items-center justify-between border-b border-slate-800 bg-slate-950/30">
+      <div
+        className={`${sidebarOpen ? 'w-64' : 'w-0 opacity-0'} bg-slate-900 flex flex-col border-r border-slate-800 shrink-0 shadow-2xl z-20 transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap`}
+        onMouseDownCapture={() => {
+          sidebarHotkeyScopeRef.current = true;
+        }}
+        onFocusCapture={() => {
+          sidebarHotkeyScopeRef.current = true;
+        }}
+      >
+        <div className="p-4 flex items-center justify-between border-b border-slate-800 bg-slate-950/30">
           <div className="flex items-center gap-3">
             <img src="/app-icon.png" alt="" className="w-8 h-8 rounded object-cover shadow-lg shadow-indigo-500/20" />
             <h1 className="text-lg font-bold text-white tracking-tight">NexusMQTT</h1>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="text-slate-500 hover:text-slate-200 transition-colors">
+          <button onClick={() => {
+            sidebarHotkeyScopeRef.current = false;
+            setSidebarOpen(false);
+          }} className="text-slate-500 hover:text-slate-200 transition-colors">
             <i className="fas fa-angle-left text-lg"></i>
           </button>
         </div>
 
-        <div className="p-3 border-b border-slate-800 bg-slate-900 sticky top-0 z-10">
+        <div className="p-2.5 border-b border-slate-800 bg-slate-900 sticky top-0 z-10">
           <div className="relative">
             <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
             <input type="text" placeholder={t('app.searchConnections')} className="w-full bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" value={connectionSearch} onChange={e => setConnectionSearch(e.target.value)} />
@@ -1452,7 +1527,7 @@ const App: React.FC = () => {
         <div className="flex-1 overflow-y-auto py-2 space-y-1 custom-scrollbar">
           {sortedGroupNames.map(groupName => (
             <div key={groupName} className="mb-2">
-              <div onClick={() => setExpandedGroups(prev => ({ ...prev, [groupName]: !prev[groupName] }))} className="px-4 py-1.5 flex items-center gap-2 cursor-pointer hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 transition-colors select-none group">
+              <div onClick={() => setExpandedGroups(prev => ({ ...prev, [groupName]: !prev[groupName] }))} className="px-3 py-1.5 flex items-center gap-2 cursor-pointer hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 transition-colors select-none group">
                 <i className={`fas fa-chevron-right text-[10px] transition-transform duration-200 ${expandedGroups[groupName] ? 'rotate-90' : ''}`}></i>
                 <span className="text-xs font-bold uppercase tracking-wider flex-1">{displayGroupName(groupName)}</span>
                 <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-500">{groupedConnections[groupName].length}</span>
@@ -1464,8 +1539,12 @@ const App: React.FC = () => {
                       key={c.profile.id}
                       profile={c.profile}
                       status={c.status}
+                      protocol={resolveProfileProtocol(c.profile, brokers)}
                       isActive={activeId === c.profile.id}
-                      onSelect={() => setActiveId(c.profile.id)}
+                      onSelect={() => {
+                        sidebarHotkeyScopeRef.current = true;
+                        setActiveId(c.profile.id);
+                      }}
                       onDelete={(e) => { void deleteConnection(e, c.profile.id); }}
                       onEdit={(e) => { e.stopPropagation(); setEditingProfile(c.profile); setIsModalOpen(true); }}
                       onClone={(e) => cloneConnection(e, c.profile)}
@@ -1478,7 +1557,7 @@ const App: React.FC = () => {
           ))}
         </div>
 
-        <div className="p-4 border-t border-slate-800 bg-slate-950/30 space-y-2">
+        <div className="p-3 border-t border-slate-800 bg-slate-950/30 space-y-2">
           <button onClick={() => { setEditingProfile(undefined); setIsModalOpen(true); }} className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg font-semibold text-sm">
             <i className="fas fa-plus"></i> {t('app.addConnection')}
           </button>
@@ -1496,10 +1575,18 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden relative bg-slate-50">
+      <div
+        className="flex-1 flex flex-col overflow-hidden relative bg-slate-50"
+        onMouseDownCapture={() => {
+          sidebarHotkeyScopeRef.current = false;
+        }}
+        onFocusCapture={() => {
+          sidebarHotkeyScopeRef.current = false;
+        }}
+      >
         {activeConnection ? (
           <>
-            <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shadow-sm z-10 flex-shrink-0">
+            <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-5 shadow-sm z-10 flex-shrink-0">
               <div className="flex items-center gap-4 overflow-hidden">
                 {!sidebarOpen && (
                   <button onClick={() => setSidebarOpen(true)} className="text-slate-400 hover:text-indigo-600 transition-colors mr-2">
@@ -1509,6 +1596,9 @@ const App: React.FC = () => {
                 <div className="flex flex-col">
                   <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 truncate">
                     {activeConnection.profile.name}
+                    <span className={`text-[10px] px-2 py-0.5 rounded uppercase tracking-wide border ${protocolBadgeStylesLight[activeProtocol]}`}>
+                      {activeProtocol}
+                    </span>
                     {activeConnection.profile.brokerId && <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 rounded uppercase tracking-wide border border-indigo-100">{t('app.linked')}</span>}
                   </h2>
                   <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
@@ -1533,23 +1623,26 @@ const App: React.FC = () => {
             </header>
 
             {activeConnection.lastError && (
-              <div className="bg-red-50 text-red-700 px-6 py-2 text-xs border-b border-red-100 flex items-center gap-2 animate-in slide-in-from-top-2">
+              <div className="bg-red-50 text-red-700 px-4 lg:px-5 py-2 text-xs border-b border-red-100 flex items-center gap-2 animate-in slide-in-from-top-2">
                 <i className="fas fa-exclamation-circle"></i> <span className="font-semibold">{t('app.connectionError')}</span> {activeConnection.lastError}
               </div>
             )}
 
-            <main className="flex-1 p-4 lg:p-6 overflow-hidden">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
-                <div className="lg:col-span-4 h-full min-h-[500px]">
+            <main className="flex-1 p-2 lg:p-2.5 overflow-hidden">
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 h-full">
+                <div className="lg:col-span-2 h-full min-h-[500px]">
                   <TopicWorkbench
                     connectionId={activeConnection.profile.id}
                     isConnected={activeConnection.status === 'connected'}
                     subscriptions={activeConnection.subscriptions}
                     document={activeTopicDoc}
                     onDocumentChange={upsertConnectionTopicDocument}
-                    onPublish={(topic, payload, qos, retain) => {
-                      void publish(activeConnection.profile.id, topic, payload, qos, retain);
+                    onPublishForConnection={(targetConnectionId, topic, payload, qos, retain) => {
+                      void publish(targetConnectionId, topic, payload, qos, retain);
                     }}
+                    isConnectionConnected={(targetConnectionId) =>
+                      connections[targetConnectionId]?.status === 'connected'
+                    }
                     onSubscribe={(topic, qos) => {
                       void subscribe(activeConnection.profile.id, topic, qos);
                     }}
@@ -1564,7 +1657,7 @@ const App: React.FC = () => {
                     onConfirmDeleteTopic={confirmDeleteTopic}
                   />
                 </div>
-                <div className="lg:col-span-8 h-full min-h-[500px]">
+                <div className="lg:col-span-3 h-full min-h-[500px]">
                   <MessageLog
                     messages={logMessages}
                     subscriptions={activeConnection.subscriptions}

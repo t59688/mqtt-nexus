@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ConnectionTopicDocument,
@@ -13,7 +13,14 @@ interface TopicWorkbenchProps {
   document?: ConnectionTopicDocument;
   subscriptions: Subscription[];
   onDocumentChange: (connectionId: string, doc: ConnectionTopicDocument) => void;
-  onPublish: (topic: string, payload: string, qos: 0 | 1 | 2, retain: boolean) => void;
+  onPublishForConnection: (
+    connectionId: string,
+    topic: string,
+    payload: string,
+    qos: 0 | 1 | 2,
+    retain: boolean
+  ) => void;
+  isConnectionConnected: (connectionId: string) => boolean;
   onSubscribe: (topic: string, qos: 0 | 1 | 2) => void;
   onUnsubscribe: (topic: string) => void;
   onToggleMute: (topic: string) => void;
@@ -36,9 +43,39 @@ interface TopicContextMenuAction {
   key: string;
   label: string;
   icon: string;
-  group: 'sub' | 'pub';
+  group: 'sub' | 'pub' | 'auto';
   disabled?: boolean;
   onClick: () => void;
+}
+
+type AutoPublishStopMode = 'manual' | 'count' | 'until';
+type AutoPublishPayloadField = 'payloadTemplate' | 'payloadExample';
+
+interface AutoPublishStatus {
+  connectionId: string;
+  topicId: string;
+  topicName: string;
+  intervalMs: number;
+  stopMode: AutoPublishStopMode;
+  remainingCount: number | null;
+  untilTs: number | null;
+}
+
+interface AutoPublishTask extends AutoPublishStatus {
+  topic: string;
+  payload: string;
+  qos: 0 | 1 | 2;
+  retain: boolean;
+  timerId: number | null;
+}
+
+interface AutoPublishDialogState {
+  connectionId: string;
+  topicId: string;
+  intervalSeconds: string;
+  stopMode: AutoPublishStopMode;
+  maxCount: string;
+  untilLocal: string;
 }
 
 const createDefaultTopic = (): TopicCatalogItem => ({
@@ -82,13 +119,33 @@ const clampMenuPosition = (
   };
 };
 
+const formatDateTimeLocal = (timestamp: number): string => {
+  const d = new Date(timestamp);
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
+const parsePositiveInt = (value: string): number | null => {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+  return parsed;
+};
+
+const getAutoPublishTaskId = (connectionId: string, topicId: string): string =>
+  `${connectionId}::${topicId}`;
+
+const AUTO_PUBLISH_UNTIL_PRESETS_MINUTES = [2, 5, 10, 60];
+
 const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
   connectionId,
   isConnected,
   document,
   subscriptions,
   onDocumentChange,
-  onPublish,
+  onPublishForConnection,
+  isConnectionConnected,
   onSubscribe,
   onUnsubscribe,
   onToggleMute,
@@ -104,9 +161,27 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
   const [activeTopicId, setActiveTopicId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [topicContextMenu, setTopicContextMenu] = useState<TopicContextMenuState | null>(null);
+  const [autoPublishStatusMap, setAutoPublishStatusMap] = useState<Record<string, AutoPublishStatus>>({});
+  const [autoPublishDialog, setAutoPublishDialog] = useState<AutoPublishDialogState | null>(null);
 
   const topics = document?.topics || [];
   const subscriptionSet = useMemo(() => new Set(subscriptions.map((sub) => sub.topic)), [subscriptions]);
+  const autoPublishTasksRef = useRef<Record<string, AutoPublishTask>>({});
+  const onPublishForConnectionRef = useRef(onPublishForConnection);
+  const isConnectionConnectedRef = useRef(isConnectionConnected);
+  const onNotifyRef = useRef(onNotify);
+
+  useEffect(() => {
+    onPublishForConnectionRef.current = onPublishForConnection;
+  }, [onPublishForConnection]);
+
+  useEffect(() => {
+    isConnectionConnectedRef.current = isConnectionConnected;
+  }, [isConnectionConnected]);
+
+  useEffect(() => {
+    onNotifyRef.current = onNotify;
+  }, [onNotify]);
 
   const filteredTopics = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -171,6 +246,50 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
       setTopicContextMenu(null);
     }
   }, [topics, topicContextMenu]);
+
+  useEffect(() => {
+    const validTopicIds = new Set(topics.map((item) => item.id));
+    Object.entries(autoPublishTasksRef.current).forEach(([taskId, task]) => {
+      if (task.connectionId !== connectionId) {
+        return;
+      }
+      if (!validTopicIds.has(task.topicId)) {
+        removeAutoPublishTask(taskId, { key: 'topicWorkbench.autoPublish.topicMissing', tone: 'error' });
+      }
+    });
+
+    if (
+      autoPublishDialog &&
+      autoPublishDialog.connectionId === connectionId &&
+      !validTopicIds.has(autoPublishDialog.topicId)
+    ) {
+      setAutoPublishDialog(null);
+    }
+  }, [topics, connectionId, autoPublishDialog]);
+
+  useEffect(() => {
+    setAutoPublishDialog(null);
+  }, [connectionId]);
+
+  useEffect(() => {
+    if (isConnected) {
+      return;
+    }
+    const runningEntries = Object.entries(autoPublishTasksRef.current);
+    runningEntries.forEach(([taskId, task]) => {
+      if (task.connectionId !== connectionId) {
+        return;
+      }
+      removeAutoPublishTask(taskId, { key: 'topicWorkbench.autoPublish.disconnectedStop', tone: 'error' });
+    });
+  }, [isConnected, connectionId]);
+
+  useEffect(
+    () => () => {
+      stopAllAutoPublish();
+    },
+    []
+  );
 
   const persistTopics = (nextTopics: TopicCatalogItem[]) => {
     onDocumentChange(connectionId, {
@@ -246,7 +365,271 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
       onNotify?.(t('topicWorkbench.payloadRequired'), 'error');
       return;
     }
-    onPublish(topicItem.topic, payload, topicItem.qos, topicItem.retain);
+    onPublishForConnection(connectionId, topicItem.topic, payload, topicItem.qos, topicItem.retain);
+  };
+
+  const resolveAutoPublishField = (topicItem: TopicCatalogItem): AutoPublishPayloadField | null => {
+    if ((topicItem.payloadTemplate || '').trim()) {
+      return 'payloadTemplate';
+    }
+    if ((topicItem.payloadExample || '').trim()) {
+      return 'payloadExample';
+    }
+    return null;
+  };
+
+  const clearAutoPublishTimer = (taskId: string) => {
+    const task = autoPublishTasksRef.current[taskId];
+    if (!task || task.timerId === null) {
+      return;
+    }
+    window.clearTimeout(task.timerId);
+    task.timerId = null;
+  };
+
+  const removeAutoPublishTask = (
+    taskId: string,
+    notify?: { key: string; tone?: 'info' | 'success' | 'error'; vars?: Record<string, string | number> }
+  ) => {
+    const task = autoPublishTasksRef.current[taskId];
+    clearAutoPublishTimer(taskId);
+    delete autoPublishTasksRef.current[taskId];
+    setAutoPublishStatusMap((prev) => {
+      if (!prev[taskId]) {
+        return prev;
+      }
+      const next = { ...prev };
+      delete next[taskId];
+      return next;
+    });
+    if (notify) {
+      const vars = {
+        name: task?.topicName || '',
+        ...(notify.vars || {}),
+      };
+      onNotifyRef.current?.(t(notify.key, vars), notify.tone || 'info');
+    }
+  };
+
+  const stopAllAutoPublish = () => {
+    Object.keys(autoPublishTasksRef.current).forEach((taskId) => {
+      clearAutoPublishTimer(taskId);
+      delete autoPublishTasksRef.current[taskId];
+    });
+    setAutoPublishStatusMap({});
+  };
+
+  const runAutoPublishTick = (taskId: string) => {
+    const task = autoPublishTasksRef.current[taskId];
+    if (!task) {
+      return;
+    }
+
+    if (!isConnectionConnectedRef.current(task.connectionId)) {
+      removeAutoPublishTask(taskId, { key: 'topicWorkbench.autoPublish.disconnectedStop', tone: 'error' });
+      return;
+    }
+
+    if (task.stopMode === 'until' && task.untilTs !== null && Date.now() >= task.untilTs) {
+      removeAutoPublishTask(taskId, {
+        key: 'topicWorkbench.autoPublish.completedUntil',
+        tone: 'success',
+      });
+      return;
+    }
+
+    onPublishForConnectionRef.current(task.connectionId, task.topic, task.payload, task.qos, task.retain);
+
+    if (task.stopMode === 'count' && task.remainingCount !== null) {
+      task.remainingCount -= 1;
+      if (task.remainingCount <= 0) {
+        removeAutoPublishTask(taskId, {
+          key: 'topicWorkbench.autoPublish.completedCount',
+          tone: 'success',
+        });
+        return;
+      }
+    }
+
+    setAutoPublishStatusMap((prev) => ({
+      ...prev,
+      [taskId]: {
+        connectionId: task.connectionId,
+        topicId: task.topicId,
+        topicName: task.topicName,
+        intervalMs: task.intervalMs,
+        stopMode: task.stopMode,
+        remainingCount: task.remainingCount,
+        untilTs: task.untilTs,
+      },
+    }));
+
+    task.timerId = window.setTimeout(() => runAutoPublishTick(taskId), task.intervalMs);
+  };
+
+  const stopAutoPublish = (taskId: string, notify = true) => {
+    removeAutoPublishTask(
+      taskId,
+      notify
+        ? {
+            key: 'topicWorkbench.autoPublish.stopped',
+            tone: 'info',
+          }
+        : undefined
+    );
+  };
+
+  const startAutoPublish = (
+    topicItem: TopicCatalogItem,
+    options: { intervalSeconds: number; stopMode: AutoPublishStopMode; maxCount: number | null; untilTs: number | null }
+  ) => {
+    if (!canPublishDirection(topicItem.direction)) {
+      return;
+    }
+    if (!isConnected) {
+      onNotify?.(t('topicWorkbench.connectRequired'), 'error');
+      return;
+    }
+    if (!topicItem.topic.trim()) {
+      onNotify?.(t('topicWorkbench.topicRequired'), 'error');
+      return;
+    }
+
+    const field = resolveAutoPublishField(topicItem);
+    if (!field) {
+      onNotify?.(t('topicWorkbench.autoPublish.payloadMissing'), 'error');
+      return;
+    }
+
+    const payload = (topicItem[field] || '').trim();
+    if (!payload) {
+      onNotify?.(t('topicWorkbench.autoPublish.payloadMissing'), 'error');
+      return;
+    }
+
+    const taskId = getAutoPublishTaskId(connectionId, topicItem.id);
+    stopAutoPublish(taskId, false);
+    const task: AutoPublishTask = {
+      connectionId,
+      topicId: topicItem.id,
+      topicName: topicItem.name || topicItem.topic,
+      intervalMs: options.intervalSeconds * 1000,
+      stopMode: options.stopMode,
+      remainingCount: options.stopMode === 'count' ? options.maxCount : null,
+      untilTs: options.stopMode === 'until' ? options.untilTs : null,
+      topic: topicItem.topic,
+      payload,
+      qos: topicItem.qos,
+      retain: topicItem.retain,
+      timerId: null,
+    };
+
+    autoPublishTasksRef.current[taskId] = task;
+    setAutoPublishStatusMap((prev) => ({
+      ...prev,
+      [taskId]: {
+        connectionId,
+        topicId: topicItem.id,
+        topicName: task.topicName,
+        intervalMs: task.intervalMs,
+        stopMode: task.stopMode,
+        remainingCount: task.remainingCount,
+        untilTs: task.untilTs,
+      },
+    }));
+
+    task.timerId = window.setTimeout(() => runAutoPublishTick(taskId), task.intervalMs);
+    onNotify?.(
+      t('topicWorkbench.autoPublish.started', {
+        name: task.topicName,
+        interval: options.intervalSeconds,
+      }),
+      'success'
+    );
+  };
+
+  const openAutoPublishDialog = (topicItem: TopicCatalogItem) => {
+    setAutoPublishDialog({
+      connectionId,
+      topicId: topicItem.id,
+      intervalSeconds: '5',
+      stopMode: 'manual',
+      maxCount: '10',
+      untilLocal: formatDateTimeLocal(Date.now() + 2 * 60 * 1000),
+    });
+  };
+
+  const submitAutoPublishDialog = () => {
+    if (!autoPublishDialog) {
+      return;
+    }
+
+    if (autoPublishDialog.connectionId !== connectionId) {
+      setAutoPublishDialog(null);
+      return;
+    }
+
+    const topicItem = topics.find((item) => item.id === autoPublishDialog.topicId);
+    if (!topicItem) {
+      onNotify?.(t('topicWorkbench.connectionMissing'), 'error');
+      setAutoPublishDialog(null);
+      return;
+    }
+
+    const intervalSeconds = parsePositiveInt(autoPublishDialog.intervalSeconds);
+    if (!intervalSeconds) {
+      onNotify?.(t('topicWorkbench.autoPublish.invalidInterval'), 'error');
+      return;
+    }
+
+    let maxCount: number | null = null;
+    if (autoPublishDialog.stopMode === 'count') {
+      maxCount = parsePositiveInt(autoPublishDialog.maxCount);
+      if (!maxCount) {
+        onNotify?.(t('topicWorkbench.autoPublish.invalidCount'), 'error');
+        return;
+      }
+    }
+
+    let untilTs: number | null = null;
+    if (autoPublishDialog.stopMode === 'until') {
+      const parsed = new Date(autoPublishDialog.untilLocal).getTime();
+      if (!Number.isFinite(parsed) || parsed <= Date.now()) {
+        onNotify?.(t('topicWorkbench.autoPublish.invalidUntil'), 'error');
+        return;
+      }
+      untilTs = parsed;
+    }
+
+    startAutoPublish(topicItem, {
+      intervalSeconds,
+      stopMode: autoPublishDialog.stopMode,
+      maxCount,
+      untilTs,
+    });
+    setAutoPublishDialog(null);
+  };
+
+  const formatAutoPublishStatusText = (status: AutoPublishStatus): string => {
+    const intervalSeconds = Math.max(1, Math.round(status.intervalMs / 1000));
+    if (status.stopMode === 'count') {
+      return t('topicWorkbench.autoPublish.statusCount', {
+        remaining: status.remainingCount || 0,
+        interval: intervalSeconds,
+      });
+    }
+    if (status.stopMode === 'until' && status.untilTs !== null) {
+      return t('topicWorkbench.autoPublish.statusUntil', {
+        time: new Date(status.untilTs).toLocaleTimeString([], {
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        }),
+        interval: intervalSeconds,
+      });
+    }
+    return t('topicWorkbench.autoPublish.statusManual', { interval: intervalSeconds });
   };
 
   const subscribeTopic = (topicItem: TopicCatalogItem) => {
@@ -315,7 +698,9 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
 
   const topicContextActions: TopicContextMenuAction[] = [];
   if (contextMenuTopic) {
+    const contextTaskId = getAutoPublishTaskId(connectionId, contextMenuTopic.id);
     const contextTopicSubscribed = subscriptionSet.has(contextMenuTopic.topic);
+    const autoPublishActive = Boolean(autoPublishStatusMap[contextTaskId]);
     if (canSubscribeDirection(contextMenuTopic.direction)) {
       topicContextActions.push(
         {
@@ -357,6 +742,24 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
           onClick: () => publishTopicFromField(contextMenuTopic, 'payloadTemplate'),
         }
       );
+      if (autoPublishActive) {
+        topicContextActions.push({
+          key: 'stopAutoPublish',
+          label: t('topicWorkbench.contextMenu.stopAutoPublish'),
+          icon: 'fa-stop',
+          group: 'auto',
+          onClick: () => stopAutoPublish(contextTaskId),
+        });
+      } else {
+        topicContextActions.push({
+          key: 'startAutoPublish',
+          label: t('topicWorkbench.contextMenu.startAutoPublish'),
+          icon: 'fa-clock',
+          group: 'auto',
+          disabled: !isConnected || !contextMenuTopic.topic.trim(),
+          onClick: () => openAutoPublishDialog(contextMenuTopic),
+        });
+      }
     }
   }
 
@@ -382,7 +785,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 h-full overflow-hidden flex flex-col">
-      <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/60 space-y-3">
+      <div className="px-3 py-2.5 border-b border-slate-100 bg-slate-50/60 space-y-2">
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
             <i className="fas fa-diagram-project text-indigo-500"></i>
@@ -440,12 +843,12 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
       <div className="flex-1 min-h-0 grid grid-cols-1 xl:grid-cols-12">
         <div className="xl:col-span-5 border-r border-slate-100 overflow-y-auto custom-scrollbar">
           {filteredTopics.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center px-6 text-center text-slate-400">
+            <div className="h-full flex flex-col items-center justify-center px-4 text-center text-slate-400">
               <i className="fas fa-inbox text-3xl mb-2"></i>
               <p className="text-sm">{t('topicWorkbench.empty')}</p>
             </div>
           ) : (
-            <div className="p-2 space-y-1">
+            <div className="p-1.5 space-y-1">
               {filteredTopics.map((item) => (
                 <button
                   key={item.id}
@@ -463,12 +866,23 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                       topicId: item.id,
                     });
                   }}
-                  className={`w-full text-left p-2 rounded-lg border transition-all ${
+                  className={`w-full text-left p-1.5 rounded-lg border transition-all ${
                     item.id === activeTopic?.id
                       ? 'border-indigo-300 bg-indigo-50/70'
                       : 'border-slate-100 bg-white hover:bg-slate-50'
                   }`}
                 >
+                  {autoPublishStatusMap[getAutoPublishTaskId(connectionId, item.id)] && (
+                    <div className="mb-1.5 inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-1.5 py-0.5">
+                      <i className="fas fa-clock text-[9px] text-emerald-600"></i>
+                      <span className="text-[9px] font-semibold uppercase tracking-wide text-emerald-700">
+                        {t('topicWorkbench.autoPublish.statusTag')}
+                      </span>
+                      <span className="text-[9px] text-emerald-600">
+                        {formatAutoPublishStatusText(autoPublishStatusMap[getAutoPublishTaskId(connectionId, item.id)])}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between gap-2 mb-1">
                     <span className="text-xs font-semibold text-slate-700 truncate">{item.name || item.topic}</span>
                     <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200">
@@ -486,7 +900,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
           )}
         </div>
 
-        <div className="xl:col-span-7 overflow-y-auto custom-scrollbar p-3 space-y-3">
+        <div className="xl:col-span-7 overflow-y-auto custom-scrollbar p-2.5 space-y-2">
           {!activeTopic ? (
             <div className="h-full flex items-center justify-center text-slate-400 text-sm">
               {t('topicWorkbench.selectTopic')}
@@ -684,7 +1098,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
               </div>
 
               {subscriptions.length > 0 && (
-                <div className="border border-slate-100 rounded-lg p-2 bg-slate-50/60">
+                <div className="border border-slate-100 rounded-lg p-1.5 bg-slate-50/60">
                   <div className="text-[11px] font-semibold text-slate-500 uppercase mb-1 tracking-wide">
                     {t('topicWorkbench.activeSubscriptions')}
                   </div>
@@ -718,6 +1132,151 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
         </div>
       </div>
 
+      {autoPublishDialog && (
+        <div
+          className="fixed inset-0 z-[75] bg-black/30 backdrop-blur-[1px] flex items-center justify-center p-4"
+          onClick={() => setAutoPublishDialog(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-xl border border-slate-200 bg-white shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="px-4 py-3 border-b border-slate-100">
+              <h4 className="text-sm font-bold text-slate-800">{t('topicWorkbench.autoPublish.title')}</h4>
+              <p className="text-xs text-slate-500 mt-1">
+                {topics.find((item) => item.id === autoPublishDialog.topicId)?.name ||
+                  topics.find((item) => item.id === autoPublishDialog.topicId)?.topic}
+              </p>
+            </div>
+            <div className="p-4 space-y-3">
+              <label className="block">
+                <span className="text-xs font-medium text-slate-600">{t('topicWorkbench.autoPublish.intervalLabel')}</span>
+                <input
+                  type="number"
+                  min={1}
+                  value={autoPublishDialog.intervalSeconds}
+                  onChange={(event) =>
+                    setAutoPublishDialog((prev) =>
+                      prev ? { ...prev, intervalSeconds: event.target.value } : prev
+                    )
+                  }
+                  className="mt-1 w-full rounded border border-slate-200 px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500"
+                />
+              </label>
+
+              <div className="space-y-1.5">
+                <span className="text-xs font-medium text-slate-600">{t('topicWorkbench.autoPublish.stopModeLabel')}</span>
+                <label className="flex items-center gap-2 text-xs text-slate-700">
+                  <input
+                    type="radio"
+                    name="auto-publish-stop-mode"
+                    checked={autoPublishDialog.stopMode === 'manual'}
+                    onChange={() =>
+                      setAutoPublishDialog((prev) =>
+                        prev ? { ...prev, stopMode: 'manual' } : prev
+                      )
+                    }
+                  />
+                  {t('topicWorkbench.autoPublish.stopModeManual')}
+                </label>
+                <label className="flex items-center gap-2 text-xs text-slate-700">
+                  <input
+                    type="radio"
+                    name="auto-publish-stop-mode"
+                    checked={autoPublishDialog.stopMode === 'count'}
+                    onChange={() =>
+                      setAutoPublishDialog((prev) =>
+                        prev ? { ...prev, stopMode: 'count' } : prev
+                      )
+                    }
+                  />
+                  {t('topicWorkbench.autoPublish.stopModeCount')}
+                </label>
+                {autoPublishDialog.stopMode === 'count' && (
+                  <input
+                    type="number"
+                    min={1}
+                    value={autoPublishDialog.maxCount}
+                    onChange={(event) =>
+                      setAutoPublishDialog((prev) =>
+                        prev ? { ...prev, maxCount: event.target.value } : prev
+                      )
+                    }
+                    placeholder={t('topicWorkbench.autoPublish.countLabel')}
+                    className="w-full rounded border border-slate-200 px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500"
+                  />
+                )}
+                <label className="flex items-center gap-2 text-xs text-slate-700">
+                  <input
+                    type="radio"
+                    name="auto-publish-stop-mode"
+                    checked={autoPublishDialog.stopMode === 'until'}
+                    onChange={() =>
+                      setAutoPublishDialog((prev) =>
+                        prev ? { ...prev, stopMode: 'until' } : prev
+                      )
+                    }
+                  />
+                  {t('topicWorkbench.autoPublish.stopModeUntil')}
+                </label>
+                {autoPublishDialog.stopMode === 'until' && (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] text-slate-500">{t('topicWorkbench.autoPublish.quickPresetLabel')}</span>
+                      <div className="flex items-center gap-1">
+                        {AUTO_PUBLISH_UNTIL_PRESETS_MINUTES.map((minutes) => (
+                          <button
+                            key={minutes}
+                            type="button"
+                            onClick={() =>
+                              setAutoPublishDialog((prev) =>
+                                prev
+                                  ? { ...prev, untilLocal: formatDateTimeLocal(Date.now() + minutes * 60 * 1000) }
+                                  : prev
+                              )
+                            }
+                            className="px-1.5 py-0.5 rounded border border-slate-200 text-[10px] text-slate-600 hover:border-indigo-300 hover:text-indigo-600"
+                          >
+                            {t('topicWorkbench.autoPublish.quickPresetMinutes', { minutes })}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <label className="block">
+                      <span className="sr-only">{t('topicWorkbench.autoPublish.untilLabel')}</span>
+                      <input
+                        type="datetime-local"
+                        value={autoPublishDialog.untilLocal}
+                        onChange={(event) =>
+                          setAutoPublishDialog((prev) =>
+                            prev ? { ...prev, untilLocal: event.target.value } : prev
+                          )
+                        }
+                        className="w-full rounded border border-slate-200 px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500"
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="px-4 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-2">
+              <button
+                onClick={() => setAutoPublishDialog(null)}
+                className="px-3 py-1.5 rounded border border-slate-200 text-xs text-slate-600 hover:bg-slate-100"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={submitAutoPublishDialog}
+                className="px-3 py-1.5 rounded bg-indigo-600 text-white text-xs hover:bg-indigo-700"
+              >
+                {t('topicWorkbench.autoPublish.start')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {topicContextMenu && contextMenuTopic && topicContextActions.length > 0 && topicMenuPosition && (
         <div
           className="fixed z-[70] min-w-[140px] w-auto rounded-lg border border-slate-200 bg-white p-1 shadow-2xl shadow-slate-900/15"
@@ -731,11 +1290,13 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
           {topicContextActions.map((action, index) => {
             const needsDivider = index > 0 && action.group !== topicContextActions[index - 1].group;
             const iconToneClass =
-              action.key === 'unsubscribe'
+              action.key === 'unsubscribe' || action.key === 'stopAutoPublish'
                 ? 'text-red-500'
                 : action.group === 'sub'
                   ? 'text-emerald-500'
-                  : action.key === 'publishTemplate'
+                  : action.group === 'auto'
+                    ? 'text-cyan-600'
+                    : action.key === 'publishTemplate'
                     ? 'text-indigo-500'
                     : 'text-slate-500';
 
