@@ -1637,9 +1637,12 @@ const App: React.FC = () => {
                     subscriptions={activeConnection.subscriptions}
                     document={activeTopicDoc}
                     onDocumentChange={upsertConnectionTopicDocument}
-                    onPublish={(topic, payload, qos, retain) => {
-                      void publish(activeConnection.profile.id, topic, payload, qos, retain);
+                    onPublishForConnection={(targetConnectionId, topic, payload, qos, retain) => {
+                      void publish(targetConnectionId, topic, payload, qos, retain);
                     }}
+                    isConnectionConnected={(targetConnectionId) =>
+                      connections[targetConnectionId]?.status === 'connected'
+                    }
                     onSubscribe={(topic, qos) => {
                       void subscribe(activeConnection.profile.id, topic, qos);
                     }}
