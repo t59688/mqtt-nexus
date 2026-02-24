@@ -6,6 +6,7 @@ import { TAG_COLORS } from '../constants';
 interface ConnectionItemProps {
   profile: ConnectionProfile;
   status: ConnectionStatus;
+  protocol: ConnectionProfile['protocol'];
   isActive: boolean;
   onSelect: () => void;
   onDelete: (e: React.MouseEvent) => void;
@@ -21,7 +22,14 @@ const statusColors = {
   error: 'bg-red-500',
 };
 
-const ConnectionItem: React.FC<ConnectionItemProps> = ({ profile, status, isActive, onSelect, onDelete, onEdit, onClone, onContextMenu }) => {
+const protocolBadgeStyles: Record<ConnectionProfile['protocol'], string> = {
+  mqtt: 'bg-sky-500/15 text-sky-200 border-sky-500/40',
+  mqtts: 'bg-emerald-500/15 text-emerald-200 border-emerald-500/40',
+  ws: 'bg-amber-500/15 text-amber-200 border-amber-500/40',
+  wss: 'bg-cyan-500/15 text-cyan-200 border-cyan-500/40',
+};
+
+const ConnectionItem: React.FC<ConnectionItemProps> = ({ profile, status, protocol, isActive, onSelect, onDelete, onEdit, onClone, onContextMenu }) => {
   const { t } = useTranslation();
   const tagColor = profile.colorTag ? TAG_COLORS[profile.colorTag] : 'bg-slate-600';
 
@@ -42,7 +50,12 @@ const ConnectionItem: React.FC<ConnectionItemProps> = ({ profile, status, isActi
       <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${statusColors[status]}`} />
       
       <div className="flex-1 min-w-0 pr-4">
-        <h3 className="font-medium truncate text-sm leading-tight select-none">{profile.name}</h3>
+        <h3 className="font-medium truncate text-sm leading-tight select-none flex items-center gap-2">
+          <span className="truncate">{profile.name}</span>
+          <span className={`shrink-0 px-1.5 py-0.5 rounded border text-[9px] font-bold tracking-wide uppercase ${protocolBadgeStyles[protocol]}`}>
+            {protocol}
+          </span>
+        </h3>
         <p className="text-[11px] opacity-60 truncate font-mono mt-0.5 select-none">{profile.host}</p>
       </div>
 

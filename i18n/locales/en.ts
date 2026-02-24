@@ -90,12 +90,13 @@
     },
     aboutModal: {
       title: 'About NexusMQTT',
-      subtitle: 'Built for long-running, high-signal MQTT observability.',
+      subtitle: 'A desktop MQTT tool for connection debugging, message observation, and long-running records.',
       tagline:
-        'A focused desktop workflow for reliable message operations, persistent history, and clean multi-connection control.',
+        'Provides multi-connection management, subscribe/publish operations, history review, and a topic catalog for daily operations and troubleshooting.',
       copyAuthor: 'Copy Author',
       copyWechat: 'Copy',
-      openAuthor: 'Profile',
+      openAuthor: 'GitHub',
+      openHome: 'Website',
       openWechat: 'Search',
       copyRepo: 'Copy URL',
       copied: 'Copied',
@@ -153,10 +154,12 @@
     openSourceLabel: 'Open Source',
     openSourceAction: 'Open',
     aboutValue: {
-      author: 'Ziseek Team',
-      authorUrl: 'https://github.com/ziseek',
-      wechat: 'ZiseekIoT',
-      openSourceUrl: 'https://github.com/ziseek/mqtt-nexus',
+      author: 'Fox2',
+      authorUrl: 'https://github.com/t59688',
+      authorHomeUrl: 'https://aizeek.com',
+      wechat: 'Fox2 AI',
+      wechatQrUrl: 'https://youke.xn--y7xa690gmna.cn/s1/2026/02/24/699d109e4ced2.webp',
+      openSourceUrl: 'https://github.com/t59688/mqtt-nexus',
     },
     tabBrokers: 'Broker Library',
     tabIdentities: 'Identity Library',
@@ -322,3 +325,5 @@
     delete: 'Delete',
   },
 };
+
+

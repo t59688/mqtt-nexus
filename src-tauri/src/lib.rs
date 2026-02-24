@@ -19,6 +19,7 @@ use tauri::WebviewWindowBuilder;
 
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
         .manage(AppState::new())
         .setup(|app| {
             let app_handle = app.handle().clone();

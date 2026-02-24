@@ -16,6 +16,12 @@ interface ConnectionModalProps {
   onOpenSettings: (tab: 'brokers' | 'identities') => void;
 }
 
+const getProtocolDefaults = (protocol: ConnectionProfile['protocol']) => ({
+  port: protocol === 'mqtt' ? 1883 : protocol === 'mqtts' ? 8883 : protocol === 'ws' ? 8083 : 8084,
+  path: protocol === 'ws' || protocol === 'wss' ? '/mqtt' : '',
+  ssl: protocol === 'mqtts' || protocol === 'wss',
+});
+
 const ConnectionModal: React.FC<ConnectionModalProps> = ({
   isOpen,
   onClose,
@@ -36,10 +42,15 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
     }
 
     if (initialProfile) {
+      const normalizedProtocol = initialProfile.protocol || 'mqtt';
+      const defaults = getProtocolDefaults(normalizedProtocol);
       setProfile({
         ...initialProfile,
+        protocol: normalizedProtocol,
         protocolVersion: initialProfile.protocolVersion ?? 4,
-        path: initialProfile.path ?? '/mqtt',
+        port: initialProfile.port || defaults.port,
+        path: initialProfile.path ?? defaults.path,
+        ssl: initialProfile.ssl ?? defaults.ssl,
       });
       return;
     }
@@ -73,14 +84,13 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
 
       if (name === 'protocol') {
         const protocol = value as ConnectionProfile['protocol'];
-        const defaultPort = protocol === 'mqtt' ? 1883 : protocol === 'mqtts' ? 8883 : protocol === 'ws' ? 8083 : 8084;
-        const path = protocol === 'mqtt' || protocol === 'mqtts' ? '' : prev.path || '/mqtt';
+        const defaults = getProtocolDefaults(protocol);
         return {
           ...prev,
           protocol,
-          ssl: protocol === 'mqtts' || protocol === 'wss',
-          port: prev.port || defaultPort,
-          path,
+          ssl: defaults.ssl,
+          port: defaults.port,
+          path: defaults.path,
         };
       }
 

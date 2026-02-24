@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BrokerConfig, AuthIdentity } from '../types';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n';
 import { DEFAULT_BROKER, DEFAULT_IDENTITY } from '../constants';
 import foxEmblem from '../assets/fox-emblem.svg';
+import { openExternalUrl } from '../services/externalLink';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -28,6 +29,12 @@ interface SettingsModalProps {
   onExportConfig: () => void;
 }
 
+const getBrokerProtocolDefaults = (protocol: BrokerConfig['protocol']) => ({
+  port: protocol === 'mqtt' ? 1883 : protocol === 'mqtts' ? 8883 : protocol === 'ws' ? 8083 : 8084,
+  path: protocol === 'ws' || protocol === 'wss' ? '/mqtt' : '',
+  ssl: protocol === 'mqtts' || protocol === 'wss',
+});
+
 const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
@@ -51,6 +58,21 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'general' | 'brokers' | 'identities'>('general');
   const openSourceUrl = t('settingsModal.aboutValue.openSourceUrl');
+  const authorUrl = t('settingsModal.aboutValue.authorUrl');
+  const authorHomeUrl = t('settingsModal.aboutValue.authorHomeUrl');
+  const authorName = t('settingsModal.aboutValue.author');
+  const wechatName = t('settingsModal.aboutValue.wechat');
+  const wechatQrCodeUrl = t('settingsModal.aboutValue.wechatQrUrl');
+  const shortOpenSource = useMemo(() => {
+    try {
+      const parsed = new URL(openSourceUrl);
+      return parsed.host + parsed.pathname;
+    } catch {
+      return openSourceUrl;
+    }
+  }, [openSourceUrl]);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const copiedTimerRef = useRef<number | null>(null);
 
   const [editingBroker, setEditingBroker] = useState<BrokerConfig>(DEFAULT_BROKER);
   const [editingIdentity, setEditingIdentity] = useState<AuthIdentity>(DEFAULT_IDENTITY);
@@ -62,8 +84,18 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       setActiveTab(initialTab);
       setIsEditingBroker(false);
       setIsEditingIdentity(false);
+      setCopiedKey(null);
     }
   }, [isOpen, initialTab]);
+
+  useEffect(
+    () => () => {
+      if (copiedTimerRef.current) {
+        window.clearTimeout(copiedTimerRef.current);
+      }
+    },
+    []
+  );
 
   const handleBrokerSave = () => {
     if (!editingBroker.name) {
@@ -93,6 +125,25 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     const toSave = { ...editingIdentity, id: editingIdentity.id || crypto.randomUUID() };
     onSaveIdentity(toSave);
     setIsEditingIdentity(false);
+  };
+
+  const handleExternalLinkClick =
+    (url: string) => (event: React.MouseEvent<HTMLAnchorElement>) => {
+      event.preventDefault();
+      void openExternalUrl(url);
+    };
+
+  const copyText = async (key: 'author' | 'repo', text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedKey(key);
+      if (copiedTimerRef.current) {
+        window.clearTimeout(copiedTimerRef.current);
+      }
+      copiedTimerRef.current = window.setTimeout(() => setCopiedKey(null), 1200);
+    } catch {
+      setCopiedKey(null);
+    }
   };
 
   if (!isOpen) {
@@ -214,31 +265,106 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                   <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-1">{t('settingsModal.aboutSection')}</h4>
                   <p className="text-xs text-slate-500 mb-4">{t('settingsModal.aboutDescription')}</p>
-                  <div className="mb-4 flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <img src={foxEmblem} alt={t('settingsModal.aboutSection')} className="h-20 w-20 object-contain" />
-                  </div>
+                  <div className="space-y-4">
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <div className="mx-auto flex h-20 w-20 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white p-3 sm:mx-0">
+                          <img src={foxEmblem} alt={t('settingsModal.aboutSection')} className="h-14 w-14 object-contain" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{t('settingsModal.aboutSection')}</p>
+                          <p className="text-sm text-slate-600 leading-relaxed">{t('app.aboutModal.tagline')}</p>
+                        </div>
+                      </div>
+                    </div>
 
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                      <span className="text-slate-500">{t('settingsModal.authorLabel')}</span>
-                      <span className="font-semibold text-slate-700">{t('settingsModal.aboutValue.author')}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                      <span className="text-slate-500">{t('settingsModal.wechatLabel')}</span>
-                      <span className="font-mono text-slate-700">{t('settingsModal.aboutValue.wechat')}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                      <span className="text-slate-500">{t('settingsModal.openSourceLabel')}</span>
-                      <a
-                        href={openSourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium"
-                      >
-                        <span className="hidden sm:inline">{openSourceUrl}</span>
-                        <span>{t('settingsModal.openSourceAction')}</span>
-                        <i className="fas fa-arrow-up-right-from-square text-xs"></i>
-                      </a>
+                    <div className="grid grid-cols-1 items-start gap-3 lg:grid-cols-3">
+                      <div className="h-fit rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <div className="mb-2 flex items-center gap-2">
+                          <i className="fas fa-user text-xs text-slate-400"></i>
+                          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{t('settingsModal.authorLabel')}</p>
+                        </div>
+                        <div className="text-sm font-semibold text-slate-700 break-all">{authorName}</div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {authorUrl && (
+                            <a
+                              href={authorUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={handleExternalLinkClick(authorUrl)}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:border-indigo-400 hover:text-indigo-600"
+                            >
+                              <span>{t('app.aboutModal.openAuthor')}</span>
+                              <i className="fas fa-arrow-up-right-from-square text-[10px]"></i>
+                            </a>
+                          )}
+                          {authorHomeUrl && (
+                            <a
+                              href={authorHomeUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={handleExternalLinkClick(authorHomeUrl)}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:border-indigo-400 hover:text-indigo-600"
+                            >
+                              <span>{t('app.aboutModal.openHome')}</span>
+                              <i className="fas fa-arrow-up-right-from-square text-[10px]"></i>
+                            </a>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="h-fit rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <div className="mb-2 flex items-center gap-2">
+                          <i className="fab fa-weixin text-sm text-emerald-500"></i>
+                          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{t('settingsModal.wechatLabel')}</p>
+                        </div>
+                        <div className="text-sm font-semibold text-slate-700 break-all">{wechatName}</div>
+                        <div className="mt-3 flex justify-center">
+                          <div className="rounded-xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-2">
+                            <div className="rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+                              <img
+                                src={wechatQrCodeUrl}
+                                alt={`${wechatName} QR Code`}
+                                className="h-24 w-24 rounded-md object-cover"
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="h-fit rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <div className="mb-2 flex items-center gap-2">
+                          <i className="fab fa-github text-sm text-slate-500"></i>
+                          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{t('settingsModal.openSourceLabel')}</p>
+                        </div>
+                        <div className="text-sm font-medium text-indigo-600 break-all">{shortOpenSource}</div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            onClick={() => {
+                              void copyText('repo', openSourceUrl);
+                            }}
+                            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                              copiedKey === 'repo'
+                                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                                : 'border-slate-300 bg-white text-slate-600 hover:border-indigo-400 hover:text-indigo-600'
+                            }`}
+                          >
+                            {copiedKey === 'repo' ? t('app.aboutModal.copied') : t('app.aboutModal.copyRepo')}
+                          </button>
+                          <a
+                            href={openSourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={handleExternalLinkClick(openSourceUrl)}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:border-indigo-400 hover:text-indigo-600"
+                          >
+                            <span>{t('app.aboutModal.openRepo')}</span>
+                            <i className="fas fa-arrow-up-right-from-square text-[10px]"></i>
+                          </a>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -335,13 +461,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                           value={editingBroker.protocol}
                           onChange={(e) => {
                             const protocol = e.target.value as BrokerConfig['protocol'];
-                            const port = protocol === 'mqtt' ? 1883 : protocol === 'mqtts' ? 8883 : protocol === 'ws' ? 8083 : 8084;
+                            const defaults = getBrokerProtocolDefaults(protocol);
                             setEditingBroker((b) => ({
                               ...b,
                               protocol,
-                              port: b.port || port,
-                              path: protocol === 'ws' || protocol === 'wss' ? b.path || '/mqtt' : '',
-                              ssl: protocol === 'mqtts' || protocol === 'wss',
+                              port: defaults.port,
+                              path: defaults.path,
+                              ssl: defaults.ssl,
                             }));
                           }}
                         >

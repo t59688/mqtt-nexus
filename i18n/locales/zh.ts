@@ -90,11 +90,12 @@
     },
     aboutModal: {
       title: '关于 NexusMQTT',
-      subtitle: '面向长时间监控与高信噪比运维场景。',
-      tagline: '聚焦可靠报文操作、持久历史回溯与多连接的清爽控制体验。',
+      subtitle: '用于 MQTT 连接调试、消息观测与长时间记录的桌面工具。',
+      tagline: '提供多连接管理、订阅与发布、历史回溯以及主题文档工作台，便于日常运维与排障。',
       copyAuthor: '复制作者',
       copyWechat: '复制',
-      openAuthor: '主页',
+      openAuthor: 'GitHub',
+      openHome: '主页',
       openWechat: '搜索',
       copyRepo: '复制链接',
       copied: '已复制',
@@ -152,10 +153,12 @@
     openSourceLabel: '开源地址',
     openSourceAction: '打开',
     aboutValue: {
-      author: 'Ziseek 团队',
-      authorUrl: 'https://github.com/ziseek',
-      wechat: 'ZiseekIoT',
-      openSourceUrl: 'https://github.com/ziseek/mqtt-nexus',
+      author: '狐狸二号',
+      authorUrl: 'https://github.com/t59688',
+      authorHomeUrl: 'https://aizeek.com',
+      wechat: '狐狸二号的AI',
+      wechatQrUrl: 'https://youke.xn--y7xa690gmna.cn/s1/2026/02/24/699d109e4ced2.webp',
+      openSourceUrl: 'https://github.com/t59688/mqtt-nexus',
     },
     tabBrokers: 'Broker 库',
     tabIdentities: '身份库',
@@ -321,3 +324,5 @@
     delete: '删除',
   },
 };
+
+

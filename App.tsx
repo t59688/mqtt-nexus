@@ -183,6 +183,23 @@ const normalizeProfile = (profile: ConnectionProfile): ConnectionProfile => {
   };
 };
 
+const resolveProfileProtocol = (
+  profile: ConnectionProfile,
+  brokers: BrokerConfig[]
+): ConnectionProfile['protocol'] => {
+  if (!profile.brokerId) {
+    return profile.protocol;
+  }
+  return brokers.find((broker) => broker.id === profile.brokerId)?.protocol || profile.protocol;
+};
+
+const protocolBadgeStylesLight: Record<ConnectionProfile['protocol'], string> = {
+  mqtt: 'bg-sky-50 text-sky-700 border-sky-200',
+  mqtts: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  ws: 'bg-amber-50 text-amber-700 border-amber-200',
+  wss: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+};
+
 const appendMessages = (prev: Record<string, ConnectionState>, connectionId: string, newMessages: Message[]): Record<string, ConnectionState> => {
   const conn = prev[connectionId];
   if (!conn || newMessages.length === 0) return prev;
@@ -281,6 +298,8 @@ const App: React.FC = () => {
   const toastTimersRef = useRef<number[]>([]);
   const activityTimersRef = useRef<number[]>([]);
   const activeIdRef = useRef<string | null>(null);
+  const sidebarHotkeyScopeRef = useRef(false);
+  const sidebarCopiedConnectionIdRef = useRef<string | null>(null);
   const currentLanguage: SupportedLanguage = i18n.resolvedLanguage === 'zh' ? 'zh' : 'en';
   const displayGroupName = (groupName: string) => (groupName === 'General' ? t('connectionModal.defaults.defaultGroup') : groupName);
 
@@ -715,41 +734,83 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const handleKeyDown = async (e: KeyboardEvent) => {
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) return;
-      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
-        if (activeId && connections[activeId]) {
-          await navigator.clipboard.writeText(`MQTT_NEXUS_PROFILE:${JSON.stringify(connections[activeId].profile)}`);
-        }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable)
+      ) {
+        return;
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
-        try {
-          const text = await navigator.clipboard.readText();
-          if (!text.startsWith('MQTT_NEXUS_PROFILE:')) return;
-          const profile = normalizeProfile(JSON.parse(text.substring('MQTT_NEXUS_PROFILE:'.length)) as ConnectionProfile);
-          const newId = crypto.randomUUID();
-          handleSaveProfile({
-            ...profile,
-            id: newId,
-            name: `${profile.name} (${t('app.copySuffix')})`,
-            clientId: `nexus-${Math.random().toString(16).substring(2, 10)}`,
-          });
-          const sourceDoc = connectionTopicDocs[profile.id];
-          if (sourceDoc) {
-            setConnectionTopicDocs((prev) => ({
-              ...prev,
-              [newId]: cloneTopicDocument(sourceDoc),
-            }));
-          }
-        } catch (err) {
-          console.error('Paste failed', err);
+
+      const isCopyShortcut = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c';
+      const isPasteShortcut = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v';
+      if (!isCopyShortcut && !isPasteShortcut) {
+        return;
+      }
+
+      const selectedText = window.getSelection()?.toString().trim() ?? '';
+      if (isCopyShortcut && selectedText) {
+        return;
+      }
+
+      if (!sidebarOpen || !sidebarHotkeyScopeRef.current) {
+        return;
+      }
+
+      if (isModalOpen || isSettingsOpen || isAboutOpen || isExportModalOpen || quickAction || confirmDialog) {
+        return;
+      }
+
+      if (isCopyShortcut) {
+        if (activeId && connections[activeId]) {
+          sidebarCopiedConnectionIdRef.current = activeId;
         }
+        return;
+      }
+
+      const copiedId = sidebarCopiedConnectionIdRef.current;
+      if (!copiedId) {
+        return;
+      }
+      const sourceConnection = connections[copiedId];
+      if (!sourceConnection) {
+        return;
+      }
+
+      e.preventDefault();
+      const sourceProfile = sourceConnection.profile;
+      const newId = crypto.randomUUID();
+      handleSaveProfile({
+        ...sourceProfile,
+        id: newId,
+        name: `${sourceProfile.name} (${t('app.copySuffix')})`,
+        clientId: `nexus-${Math.random().toString(16).substring(2, 10)}`,
+      });
+      const sourceDoc = connectionTopicDocs[sourceProfile.id];
+      if (sourceDoc) {
+        setConnectionTopicDocs((prev) => ({
+          ...prev,
+          [newId]: cloneTopicDocument(sourceDoc),
+        }));
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeId, connections, t, connectionTopicDocs]);
+  }, [
+    activeId,
+    connections,
+    t,
+    connectionTopicDocs,
+    sidebarOpen,
+    isModalOpen,
+    isSettingsOpen,
+    isAboutOpen,
+    isExportModalOpen,
+    quickAction,
+    confirmDialog,
+  ]);
 
   // 禁用浏览器默认右键菜单
   useEffect(() => {
@@ -1361,6 +1422,9 @@ const App: React.FC = () => {
   const allGroupNames = Array.from(new Set(listConnections(connections).map((c) => c.profile.group || 'General')));
   const welcomeDescriptionLines = t('app.welcomeDescription').split('\n');
   const activeTopicDoc = activeConnection ? connectionTopicDocs[activeConnection.profile.id] : undefined;
+  const activeProtocol = activeConnection
+    ? resolveProfileProtocol(activeConnection.profile, brokers)
+    : 'mqtt';
 
   return (
     <div className="flex h-screen bg-slate-100 font-sans text-slate-900" onClick={() => setContextMenu(null)}>
@@ -1431,13 +1495,24 @@ const App: React.FC = () => {
         </div>
       )}
 
-      <div className={`${sidebarOpen ? 'w-80' : 'w-0 opacity-0'} bg-slate-900 flex flex-col border-r border-slate-800 shrink-0 shadow-2xl z-20 transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap`}>
+      <div
+        className={`${sidebarOpen ? 'w-80' : 'w-0 opacity-0'} bg-slate-900 flex flex-col border-r border-slate-800 shrink-0 shadow-2xl z-20 transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap`}
+        onMouseDownCapture={() => {
+          sidebarHotkeyScopeRef.current = true;
+        }}
+        onFocusCapture={() => {
+          sidebarHotkeyScopeRef.current = true;
+        }}
+      >
         <div className="p-5 flex items-center justify-between border-b border-slate-800 bg-slate-950/30">
           <div className="flex items-center gap-3">
             <img src="/app-icon.png" alt="" className="w-8 h-8 rounded object-cover shadow-lg shadow-indigo-500/20" />
             <h1 className="text-lg font-bold text-white tracking-tight">NexusMQTT</h1>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="text-slate-500 hover:text-slate-200 transition-colors">
+          <button onClick={() => {
+            sidebarHotkeyScopeRef.current = false;
+            setSidebarOpen(false);
+          }} className="text-slate-500 hover:text-slate-200 transition-colors">
             <i className="fas fa-angle-left text-lg"></i>
           </button>
         </div>
@@ -1464,8 +1539,12 @@ const App: React.FC = () => {
                       key={c.profile.id}
                       profile={c.profile}
                       status={c.status}
+                      protocol={resolveProfileProtocol(c.profile, brokers)}
                       isActive={activeId === c.profile.id}
-                      onSelect={() => setActiveId(c.profile.id)}
+                      onSelect={() => {
+                        sidebarHotkeyScopeRef.current = true;
+                        setActiveId(c.profile.id);
+                      }}
                       onDelete={(e) => { void deleteConnection(e, c.profile.id); }}
                       onEdit={(e) => { e.stopPropagation(); setEditingProfile(c.profile); setIsModalOpen(true); }}
                       onClone={(e) => cloneConnection(e, c.profile)}
@@ -1496,7 +1575,15 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden relative bg-slate-50">
+      <div
+        className="flex-1 flex flex-col overflow-hidden relative bg-slate-50"
+        onMouseDownCapture={() => {
+          sidebarHotkeyScopeRef.current = false;
+        }}
+        onFocusCapture={() => {
+          sidebarHotkeyScopeRef.current = false;
+        }}
+      >
         {activeConnection ? (
           <>
             <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shadow-sm z-10 flex-shrink-0">
@@ -1509,6 +1596,9 @@ const App: React.FC = () => {
                 <div className="flex flex-col">
                   <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 truncate">
                     {activeConnection.profile.name}
+                    <span className={`text-[10px] px-2 py-0.5 rounded uppercase tracking-wide border ${protocolBadgeStylesLight[activeProtocol]}`}>
+                      {activeProtocol}
+                    </span>
                     {activeConnection.profile.brokerId && <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 rounded uppercase tracking-wide border border-indigo-100">{t('app.linked')}</span>}
                   </h2>
                   <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">

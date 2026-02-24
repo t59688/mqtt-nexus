@@ -7,10 +7,10 @@ export const DEFAULT_BROKER: BrokerConfig = {
   id: '',
   name: 'EMQX Public',
   host: 'broker.emqx.io',
-  port: 8084,
-  protocol: 'wss',
-  path: '/mqtt',
-  ssl: true,
+  port: 1883,
+  protocol: 'mqtt',
+  path: '',
+  ssl: false,
 };
 
 export const DEFAULT_IDENTITY: AuthIdentity = {
