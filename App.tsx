@@ -1496,7 +1496,7 @@ const App: React.FC = () => {
       )}
 
       <div
-        className={`${sidebarOpen ? 'w-80' : 'w-0 opacity-0'} bg-slate-900 flex flex-col border-r border-slate-800 shrink-0 shadow-2xl z-20 transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap`}
+        className={`${sidebarOpen ? 'w-64' : 'w-0 opacity-0'} bg-slate-900 flex flex-col border-r border-slate-800 shrink-0 shadow-2xl z-20 transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap`}
         onMouseDownCapture={() => {
           sidebarHotkeyScopeRef.current = true;
         }}
@@ -1504,7 +1504,7 @@ const App: React.FC = () => {
           sidebarHotkeyScopeRef.current = true;
         }}
       >
-        <div className="p-5 flex items-center justify-between border-b border-slate-800 bg-slate-950/30">
+        <div className="p-4 flex items-center justify-between border-b border-slate-800 bg-slate-950/30">
           <div className="flex items-center gap-3">
             <img src="/app-icon.png" alt="" className="w-8 h-8 rounded object-cover shadow-lg shadow-indigo-500/20" />
             <h1 className="text-lg font-bold text-white tracking-tight">NexusMQTT</h1>
@@ -1517,7 +1517,7 @@ const App: React.FC = () => {
           </button>
         </div>
 
-        <div className="p-3 border-b border-slate-800 bg-slate-900 sticky top-0 z-10">
+        <div className="p-2.5 border-b border-slate-800 bg-slate-900 sticky top-0 z-10">
           <div className="relative">
             <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
             <input type="text" placeholder={t('app.searchConnections')} className="w-full bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" value={connectionSearch} onChange={e => setConnectionSearch(e.target.value)} />
@@ -1527,7 +1527,7 @@ const App: React.FC = () => {
         <div className="flex-1 overflow-y-auto py-2 space-y-1 custom-scrollbar">
           {sortedGroupNames.map(groupName => (
             <div key={groupName} className="mb-2">
-              <div onClick={() => setExpandedGroups(prev => ({ ...prev, [groupName]: !prev[groupName] }))} className="px-4 py-1.5 flex items-center gap-2 cursor-pointer hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 transition-colors select-none group">
+              <div onClick={() => setExpandedGroups(prev => ({ ...prev, [groupName]: !prev[groupName] }))} className="px-3 py-1.5 flex items-center gap-2 cursor-pointer hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 transition-colors select-none group">
                 <i className={`fas fa-chevron-right text-[10px] transition-transform duration-200 ${expandedGroups[groupName] ? 'rotate-90' : ''}`}></i>
                 <span className="text-xs font-bold uppercase tracking-wider flex-1">{displayGroupName(groupName)}</span>
                 <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-500">{groupedConnections[groupName].length}</span>
@@ -1557,7 +1557,7 @@ const App: React.FC = () => {
           ))}
         </div>
 
-        <div className="p-4 border-t border-slate-800 bg-slate-950/30 space-y-2">
+        <div className="p-3 border-t border-slate-800 bg-slate-950/30 space-y-2">
           <button onClick={() => { setEditingProfile(undefined); setIsModalOpen(true); }} className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg font-semibold text-sm">
             <i className="fas fa-plus"></i> {t('app.addConnection')}
           </button>
@@ -1586,7 +1586,7 @@ const App: React.FC = () => {
       >
         {activeConnection ? (
           <>
-            <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shadow-sm z-10 flex-shrink-0">
+            <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-5 shadow-sm z-10 flex-shrink-0">
               <div className="flex items-center gap-4 overflow-hidden">
                 {!sidebarOpen && (
                   <button onClick={() => setSidebarOpen(true)} className="text-slate-400 hover:text-indigo-600 transition-colors mr-2">
@@ -1623,14 +1623,14 @@ const App: React.FC = () => {
             </header>
 
             {activeConnection.lastError && (
-              <div className="bg-red-50 text-red-700 px-6 py-2 text-xs border-b border-red-100 flex items-center gap-2 animate-in slide-in-from-top-2">
+              <div className="bg-red-50 text-red-700 px-4 lg:px-5 py-2 text-xs border-b border-red-100 flex items-center gap-2 animate-in slide-in-from-top-2">
                 <i className="fas fa-exclamation-circle"></i> <span className="font-semibold">{t('app.connectionError')}</span> {activeConnection.lastError}
               </div>
             )}
 
-            <main className="flex-1 p-4 lg:p-6 overflow-hidden">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
-                <div className="lg:col-span-4 h-full min-h-[500px]">
+            <main className="flex-1 p-2 lg:p-2.5 overflow-hidden">
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 h-full">
+                <div className="lg:col-span-2 h-full min-h-[500px]">
                   <TopicWorkbench
                     connectionId={activeConnection.profile.id}
                     isConnected={activeConnection.status === 'connected'}
@@ -1654,7 +1654,7 @@ const App: React.FC = () => {
                     onConfirmDeleteTopic={confirmDeleteTopic}
                   />
                 </div>
-                <div className="lg:col-span-8 h-full min-h-[500px]">
+                <div className="lg:col-span-3 h-full min-h-[500px]">
                   <MessageLog
                     messages={logMessages}
                     subscriptions={activeConnection.subscriptions}

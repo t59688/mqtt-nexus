@@ -382,7 +382,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 h-full overflow-hidden flex flex-col">
-      <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/60 space-y-3">
+      <div className="px-3 py-2.5 border-b border-slate-100 bg-slate-50/60 space-y-2">
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
             <i className="fas fa-diagram-project text-indigo-500"></i>
@@ -440,12 +440,12 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
       <div className="flex-1 min-h-0 grid grid-cols-1 xl:grid-cols-12">
         <div className="xl:col-span-5 border-r border-slate-100 overflow-y-auto custom-scrollbar">
           {filteredTopics.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center px-6 text-center text-slate-400">
+            <div className="h-full flex flex-col items-center justify-center px-4 text-center text-slate-400">
               <i className="fas fa-inbox text-3xl mb-2"></i>
               <p className="text-sm">{t('topicWorkbench.empty')}</p>
             </div>
           ) : (
-            <div className="p-2 space-y-1">
+            <div className="p-1.5 space-y-1">
               {filteredTopics.map((item) => (
                 <button
                   key={item.id}
@@ -463,7 +463,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                       topicId: item.id,
                     });
                   }}
-                  className={`w-full text-left p-2 rounded-lg border transition-all ${
+                  className={`w-full text-left p-1.5 rounded-lg border transition-all ${
                     item.id === activeTopic?.id
                       ? 'border-indigo-300 bg-indigo-50/70'
                       : 'border-slate-100 bg-white hover:bg-slate-50'
@@ -486,7 +486,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
           )}
         </div>
 
-        <div className="xl:col-span-7 overflow-y-auto custom-scrollbar p-3 space-y-3">
+        <div className="xl:col-span-7 overflow-y-auto custom-scrollbar p-2.5 space-y-2">
           {!activeTopic ? (
             <div className="h-full flex items-center justify-center text-slate-400 text-sm">
               {t('topicWorkbench.selectTopic')}
@@ -684,7 +684,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
               </div>
 
               {subscriptions.length > 0 && (
-                <div className="border border-slate-100 rounded-lg p-2 bg-slate-50/60">
+                <div className="border border-slate-100 rounded-lg p-1.5 bg-slate-50/60">
                   <div className="text-[11px] font-semibold text-slate-500 uppercase mb-1 tracking-wide">
                     {t('topicWorkbench.activeSubscriptions')}
                   </div>
