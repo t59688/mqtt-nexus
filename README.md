@@ -13,6 +13,18 @@
 
 ---
 
+<div align="center">
+
+**欢迎关注作者**  
+还有更多免费的开源软件
+
+<br/>
+
+<img src="https://github.com/user-attachments/assets/9cff1d14-5986-49c1-9915-174570a22f3b"
+     width="200" alt="关注作者二维码" />
+
+</div>
+
 ## 目录
 
 - [NexusMQTT](#nexusmqtt)
