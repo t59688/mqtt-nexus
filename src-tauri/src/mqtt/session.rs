@@ -2,7 +2,7 @@ use crate::models::{
     ConnectionStatus, MessageDirection, MqttBatchItem, MqttMessageBatchPayload, MqttStatusPayload,
     ResolvedConnection, TransportProtocol,
 };
-use crate::mqtt::{now_millis, qos_from_u8, qos_to_u8, MqttError};
+use crate::mqtt::{MqttError, now_millis, qos_from_u8, qos_to_u8};
 
 use rumqttc::{self, AsyncClient, Event, Incoming, MqttOptions, Outgoing, Transport};
 use tauri::{AppHandle, Emitter, Manager};

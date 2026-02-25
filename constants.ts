@@ -32,9 +32,9 @@ export const DEFAULT_PROFILE: ConnectionProfile = {
 };
 
 export const DEFAULT_AI_CONFIG: AiConfig = {
-  baseUrl: import.meta.env.VITE_AI_BASE_URL || 'https://api.openai.com/v1',
-  apiKey: import.meta.env.VITE_AI_API_KEY || '',
-  model: import.meta.env.VITE_AI_MODEL || 'gpt-4o-mini',
+  baseUrl: 'https://api.openai.com/v1',
+  apiKey: '',
+  model: 'gpt-4o-mini',
 };
 
 export const COLORS = [

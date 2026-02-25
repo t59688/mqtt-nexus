@@ -265,7 +265,7 @@ const App: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const [settingsTab, setSettingsTab] = useState<'general' | 'brokers' | 'identities'>('general');
+  const [settingsTab, setSettingsTab] = useState<'general' | 'ai' | 'brokers' | 'identities'>('general');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; id: string } | null>(null);
   const [quickAction, setQuickAction] = useState<{ type: 'rename' | 'group'; id: string } | null>(null);
@@ -1273,7 +1273,7 @@ const App: React.FC = () => {
     }
   };
 
-  const openSettings = (tab: 'general' | 'brokers' | 'identities' = 'general') => {
+  const openSettings = (tab: 'general' | 'ai' | 'brokers' | 'identities' = 'general') => {
     setSettingsTab(tab);
     setIsSettingsOpen(true);
   };
@@ -1371,8 +1371,20 @@ const App: React.FC = () => {
     }
   };
 
-  const generatePayload = async (topic: string, description: string) =>
-    invokeCommand<string>('ai_generate_payload', { topic, description, options: aiConfig });
+  const generatePayload = async (topic: string, description: string) => {
+    const options: AiConfig = {
+      baseUrl: aiConfig.baseUrl?.trim() || '',
+      apiKey: aiConfig.apiKey?.trim() || '',
+      model: aiConfig.model?.trim() || '',
+    };
+
+    try {
+      return await invokeCommand<string>('ai_generate_payload', { topic, description, options });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      throw new Error(detail || t('publisher.aiFailed'));
+    }
+  };
 
   const confirmDeleteTopic = async (topicName: string) =>
     askConfirm({
@@ -1714,6 +1726,7 @@ const App: React.FC = () => {
           identities={identities}
           language={currentLanguage}
           theme={theme}
+          aiConfig={aiConfig}
           configFilePath={configPaths?.configFile}
           onLanguageChange={(language) => {
             if (SUPPORTED_LANGUAGES.includes(language)) {
@@ -1727,6 +1740,7 @@ const App: React.FC = () => {
           onExportConfig={() => {
             void exportConfig();
           }}
+          onAiConfigChange={(nextAiConfig) => setAiConfig({ ...DEFAULT_AI_CONFIG, ...nextAiConfig })}
           onSaveBroker={(b) => setBrokers(prev => { const exists = prev.find(x => x.id === b.id); if (exists) return prev.map(x => x.id === b.id ? b : x); return [...prev, b]; })}
           onDeleteBroker={(id) => setBrokers(prev => prev.filter(b => b.id !== id))}
           onSaveIdentity={(i) => setIdentities(prev => { const exists = prev.find(x => x.id === i.id); if (exists) return prev.map(x => x.id === i.id ? i : x); return [...prev, i]; })}

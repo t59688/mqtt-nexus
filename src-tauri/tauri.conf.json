@@ -2,10 +2,10 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "NexusMQTT",
   "version": "0.1.0",
-  "identifier": "com.ziseek.mqttnexus",
+  "identifier": "com.aizeek.mqttnexus",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:5173",
+    "devUrl": "http://localhost:8173",
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },

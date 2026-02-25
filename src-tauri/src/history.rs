@@ -2,7 +2,7 @@ use crate::models::{HistoryExportResult, HistoryMessageRecord, MessageDirection,
 use crate::mqtt::now_millis;
 use anyhow::{Context, Result};
 use dashmap::DashMap;
-use rusqlite::{params, Connection, OpenFlags};
+use rusqlite::{Connection, OpenFlags, params};
 use std::fs;
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};

@@ -141,6 +141,18 @@
   },
   settingsModal: {
     tabGeneral: 'General',
+    tabAi: 'AI',
+    aiTitle: 'AI Settings',
+    aiDescription: 'Configure the OpenAI-compatible endpoint used for payload generation.',
+    aiConnectionSection: 'Model Connection',
+    aiBaseUrl: 'Base URL',
+    aiApiKey: 'API Key',
+    aiModel: 'Model',
+    aiBaseUrlPlaceholder: 'https://api.openai.com/v1',
+    aiApiKeyPlaceholder: 'sk-...',
+    aiModelPlaceholder: 'gpt-4o-mini',
+    aiTip:
+      'These settings are saved in app configuration and used by AI generation. Environment variables are not required.',
     generalTitle: 'Application Preferences',
     generalDescription: 'Configure language, theme, and native config file location.',
     interfaceSection: 'Interface',

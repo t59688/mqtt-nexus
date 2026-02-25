@@ -13,8 +13,8 @@ use commands::{
     mqtt_subscribe, mqtt_unsubscribe, open_app_config_dir, save_app_config, topic_catalog_export,
 };
 use state::AppState;
-use tauri::Manager;
 use std::time::Duration;
+use tauri::Manager;
 use tauri::WebviewWindowBuilder;
 
 pub fn run() {
@@ -30,7 +30,12 @@ pub fn run() {
                 .iter()
                 .find(|window| window.label == "main")
                 .cloned()
-                .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "main window config not found"))?;
+                .ok_or_else(|| {
+                    std::io::Error::new(
+                        std::io::ErrorKind::NotFound,
+                        "main window config not found",
+                    )
+                })?;
 
             std::thread::spawn(move || {
                 // Let splashscreen paint first, then build the hidden main window.

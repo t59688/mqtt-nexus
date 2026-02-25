@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(() => ({
   clearScreen: false,
   server: {
-    port: 5173,
+    port: 8173,
     strictPort: true,
     host: process.env.TAURI_DEV_HOST || '127.0.0.1',
   },

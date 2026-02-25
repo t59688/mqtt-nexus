@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BrokerConfig, AuthIdentity } from '../types';
+import { BrokerConfig, AuthIdentity, AiConfig } from '../types';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n';
 import { DEFAULT_BROKER, DEFAULT_IDENTITY } from '../constants';
 import foxEmblem from '../assets/fox-emblem.svg';
@@ -9,7 +9,7 @@ import { openExternalUrl } from '../services/externalLink';
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialTab?: 'general' | 'brokers' | 'identities';
+  initialTab?: 'general' | 'ai' | 'brokers' | 'identities';
 
   brokers: BrokerConfig[];
   identities: AuthIdentity[];
@@ -20,6 +20,7 @@ interface SettingsModalProps {
 
   language: SupportedLanguage;
   theme: 'light' | 'dark';
+  aiConfig: AiConfig;
   configFilePath?: string;
   onLanguageChange: (language: SupportedLanguage) => void;
   onThemeChange: (theme: 'light' | 'dark') => void;
@@ -27,6 +28,7 @@ interface SettingsModalProps {
   onCopyConfigPath: () => void;
   onImportConfig: () => void;
   onExportConfig: () => void;
+  onAiConfigChange: (config: AiConfig) => void;
 }
 
 const getBrokerProtocolDefaults = (protocol: BrokerConfig['protocol']) => ({
@@ -47,6 +49,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   onDeleteIdentity,
   language,
   theme,
+  aiConfig,
   configFilePath,
   onLanguageChange,
   onThemeChange,
@@ -54,9 +57,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   onCopyConfigPath,
   onImportConfig,
   onExportConfig,
+  onAiConfigChange,
 }) => {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<'general' | 'brokers' | 'identities'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'ai' | 'brokers' | 'identities'>('general');
   const openSourceUrl = t('settingsModal.aboutValue.openSourceUrl');
   const authorUrl = t('settingsModal.aboutValue.authorUrl');
   const authorHomeUrl = t('settingsModal.aboutValue.authorHomeUrl');
@@ -162,6 +166,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               className={`pb-4 px-2 text-sm font-bold border-b-2 transition-colors ${activeTab === 'general' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
             >
               <i className="fas fa-sliders mr-2"></i> {t('settingsModal.tabGeneral')}
+            </button>
+            <button
+              onClick={() => setActiveTab('ai')}
+              className={`pb-4 px-2 text-sm font-bold border-b-2 transition-colors ${activeTab === 'ai' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            >
+              <i className="fas fa-robot mr-2"></i> {t('settingsModal.tabAi')}
             </button>
             <button
               onClick={() => setActiveTab('brokers')}
@@ -367,6 +377,79 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'ai' && (
+            <div className="h-full p-6 overflow-y-auto custom-scrollbar">
+              <div className="max-w-3xl mx-auto space-y-6">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                  <h3 className="text-lg font-bold text-slate-800 mb-1">{t('settingsModal.aiTitle')}</h3>
+                  <p className="text-xs text-slate-500">{t('settingsModal.aiDescription')}</p>
+                </div>
+
+                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">{t('settingsModal.aiConnectionSection')}</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">
+                        {t('settingsModal.aiBaseUrl')}
+                      </label>
+                      <input
+                        type="text"
+                        value={aiConfig.baseUrl || ''}
+                        onChange={(event) =>
+                          onAiConfigChange({
+                            ...aiConfig,
+                            baseUrl: event.target.value,
+                          })
+                        }
+                        placeholder={t('settingsModal.aiBaseUrlPlaceholder')}
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">
+                        {t('settingsModal.aiApiKey')}
+                      </label>
+                      <input
+                        type="password"
+                        value={aiConfig.apiKey || ''}
+                        onChange={(event) =>
+                          onAiConfigChange({
+                            ...aiConfig,
+                            apiKey: event.target.value,
+                          })
+                        }
+                        placeholder={t('settingsModal.aiApiKeyPlaceholder')}
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">
+                        {t('settingsModal.aiModel')}
+                      </label>
+                      <input
+                        type="text"
+                        value={aiConfig.model || ''}
+                        onChange={(event) =>
+                          onAiConfigChange({
+                            ...aiConfig,
+                            model: event.target.value,
+                          })
+                        }
+                        placeholder={t('settingsModal.aiModelPlaceholder')}
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-700">
+                  <i className="fas fa-circle-info mr-2"></i>
+                  {t('settingsModal.aiTip')}
                 </div>
               </div>
             </div>

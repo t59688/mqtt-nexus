@@ -1,6 +1,6 @@
 use crate::models::ResolvedConnection;
-use crate::mqtt::session::{start_session, MqttSessionHandle, SessionCommand};
 use crate::mqtt::MqttError;
+use crate::mqtt::session::{MqttSessionHandle, SessionCommand, start_session};
 
 use dashmap::DashMap;
 use tauri::AppHandle;
