@@ -52,6 +52,16 @@ pub struct AiConfig {
     pub model: Option<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase", default)]
+pub struct AiPromptsConfig {
+    pub payload_system_prompt: String,
+    pub payload_user_prompt_template: String,
+    pub payload_description_fallback: String,
+    pub topic_catalog_system_prompt: String,
+    pub topic_catalog_user_prompt_template: String,
+}
+
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum TransportProtocol {
@@ -153,6 +163,7 @@ pub struct NativeAppConfig {
     pub brokers: Vec<BrokerConfig>,
     pub identities: Vec<AuthIdentity>,
     pub ai_config: Option<AiConfig>,
+    pub ai_prompts: Option<AiPromptsConfig>,
     pub sidebar_open: Option<bool>,
     pub language: Option<String>,
     pub theme: Option<String>,
@@ -169,6 +180,7 @@ impl Default for NativeAppConfig {
             brokers: Vec::new(),
             identities: Vec::new(),
             ai_config: None,
+            ai_prompts: None,
             sidebar_open: None,
             language: None,
             theme: None,

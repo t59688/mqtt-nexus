@@ -8,6 +8,7 @@ import {
   AuthIdentity,
   ConnectionStatus,
   AiConfig,
+  AiPromptsConfig,
   AppConfigPaths,
   HistoryExportResult,
   HistoryMessageRecord,
@@ -21,6 +22,7 @@ import {
 import {
   DEFAULT_PROFILE,
   DEFAULT_AI_CONFIG,
+  DEFAULT_AI_PROMPTS,
   STORAGE_LANGUAGE_KEY,
   STORAGE_THEME_KEY,
   getRandomColor,
@@ -42,6 +44,7 @@ interface ImportPayload {
   brokers?: BrokerConfig[];
   identities?: AuthIdentity[];
   aiConfig?: AiConfig;
+  aiPrompts?: Partial<AiPromptsConfig>;
   sidebarOpen?: boolean;
   language?: string;
   theme?: ThemeMode;
@@ -190,6 +193,38 @@ const normalizeTopicDocumentMap = (
   });
   return out;
 };
+
+const normalizeAiPrompts = (value: unknown): AiPromptsConfig => {
+  if (!value || typeof value !== 'object') {
+    return { ...DEFAULT_AI_PROMPTS };
+  }
+  const raw = value as Partial<AiPromptsConfig>;
+  return {
+    payloadSystemPrompt:
+      sanitizeText(raw.payloadSystemPrompt, DEFAULT_AI_PROMPTS.payloadSystemPrompt) || DEFAULT_AI_PROMPTS.payloadSystemPrompt,
+    payloadUserPromptTemplate:
+      sanitizeText(raw.payloadUserPromptTemplate, DEFAULT_AI_PROMPTS.payloadUserPromptTemplate) ||
+      DEFAULT_AI_PROMPTS.payloadUserPromptTemplate,
+    payloadDescriptionFallback:
+      sanitizeText(raw.payloadDescriptionFallback, DEFAULT_AI_PROMPTS.payloadDescriptionFallback) ||
+      DEFAULT_AI_PROMPTS.payloadDescriptionFallback,
+    topicCatalogSystemPrompt:
+      sanitizeText(raw.topicCatalogSystemPrompt, DEFAULT_AI_PROMPTS.topicCatalogSystemPrompt) ||
+      DEFAULT_AI_PROMPTS.topicCatalogSystemPrompt,
+    topicCatalogUserPromptTemplate:
+      sanitizeText(raw.topicCatalogUserPromptTemplate, DEFAULT_AI_PROMPTS.topicCatalogUserPromptTemplate) ||
+      DEFAULT_AI_PROMPTS.topicCatalogUserPromptTemplate,
+  };
+};
+
+const renderPromptTemplate = (
+  template: string,
+  vars: Record<string, string | number>
+): string =>
+  template.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_all, key: string) => {
+    const value = vars[key];
+    return value === undefined || value === null ? '' : String(value);
+  });
 
 const stripMarkdownCodeFence = (value: string): string =>
   value
@@ -549,12 +584,13 @@ const App: React.FC = () => {
   const [brokers, setBrokers] = useState<BrokerConfig[]>([]);
   const [identities, setIdentities] = useState<AuthIdentity[]>([]);
   const [aiConfig, setAiConfig] = useState<AiConfig>(DEFAULT_AI_CONFIG);
+  const [aiPrompts, setAiPrompts] = useState<AiPromptsConfig>(DEFAULT_AI_PROMPTS);
 
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const [settingsTab, setSettingsTab] = useState<'general' | 'ai' | 'brokers' | 'identities'>('general');
+  const [settingsTab, setSettingsTab] = useState<'general' | 'ai' | 'prompts' | 'brokers' | 'identities'>('general');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; id: string } | null>(null);
   const [quickAction, setQuickAction] = useState<{ type: 'rename' | 'group'; id: string } | null>(null);
@@ -819,6 +855,7 @@ const App: React.FC = () => {
         setIdentities(loaded.identities || []);
         setSidebarOpen(loaded.sidebarOpen ?? true);
         setAiConfig({ ...DEFAULT_AI_CONFIG, ...(loaded.aiConfig || {}) });
+        setAiPrompts(normalizeAiPrompts(loaded.aiPrompts));
         setPublisherTemplates(Array.isArray(loaded.publisherTemplates) ? loaded.publisherTemplates : []);
         setConnectionTopicDocs(
           normalizeTopicDocumentMap(loaded.connectionTopicDocs, loadedConnectionIds)
@@ -941,6 +978,7 @@ const App: React.FC = () => {
       brokers,
       identities,
       aiConfig,
+      aiPrompts,
       sidebarOpen,
       language: currentLanguage,
       theme,
@@ -971,6 +1009,7 @@ const App: React.FC = () => {
     brokers,
     identities,
     aiConfig,
+    aiPrompts,
     sidebarOpen,
     currentLanguage,
     theme,
@@ -1226,6 +1265,7 @@ const App: React.FC = () => {
       brokers,
       identities,
       aiConfig,
+      aiPrompts,
       sidebarOpen,
       language: currentLanguage,
       theme,
@@ -1335,42 +1375,11 @@ const App: React.FC = () => {
 
   const buildTopicCatalogAiPrompt = (sourceName: string, sourceText: string) => {
     const responseLanguage = currentLanguage === 'zh' ? 'Chinese' : 'English';
-    return `You are an MQTT protocol analyst.
-Read the protocol document and generate a practical MQTT topic catalog.
-Return strict JSON only. No markdown fences.
-Response language for textual fields (name/description/summary): ${responseLanguage}.
-Keep topic strings unchanged from protocol definitions.
-
-Output JSON shape:
-{
-  "summary": "short summary",
-  "topics": [
-    {
-      "name": "display name",
-      "topic": "device/+/status",
-      "direction": "publish | subscribe | both",
-      "qos": 0,
-      "retain": false,
-      "contentType": "application/json",
-      "description": "what this topic means",
-      "tags": ["tag1", "tag2"],
-      "payloadTemplate": "{\\"field\\":\\"value\\"}",
-      "payloadExample": "{\\"field\\":\\"example\\"}",
-      "schema": "{\\"type\\":\\"object\\"}"
-    }
-  ]
-}
-
-Rules:
-1. Include only meaningful business topics from the document.
-2. Infer direction from protocol semantics.
-3. qos must be 0/1/2 and retain must be boolean.
-4. payloadTemplate/payloadExample/schema can be empty string when unknown.
-5. Keep topics unique by topic path.
-
-Source file: ${sourceName}
-Protocol document:
-${sourceText}`;
+    return renderPromptTemplate(aiPrompts.topicCatalogUserPromptTemplate, {
+      responseLanguage,
+      sourceName,
+      sourceText,
+    });
   };
 
   const mapTopicAiImportError = (error: unknown): string => {
@@ -1380,6 +1389,9 @@ ${sourceText}`;
     }
     if (detail.includes('Unsupported document type')) {
       return t('topicWorkbench.aiImportUnsupportedType');
+    }
+    if (detail.includes('AI user prompt is missing')) {
+      return t('topicWorkbench.aiPromptMissing');
     }
     if (detail.includes('legacy .doc')) {
       return t('topicWorkbench.aiImportLegacyDocHint');
@@ -1432,10 +1444,13 @@ ${sourceText}`;
           model: aiConfig.model?.trim() || '',
         };
 
+        const catalogPrompt = buildTopicCatalogAiPrompt(file.name, truncatedText);
         const aiResponse = await invokeCommand<string>('ai_generate_payload', {
           topic: 'mqtt/topic-catalog-from-protocol',
-          description: buildTopicCatalogAiPrompt(file.name, truncatedText),
+          description: catalogPrompt,
           options,
+          promptSystem: aiPrompts.topicCatalogSystemPrompt,
+          promptUser: catalogPrompt,
         });
         const parsed = parseTopicCatalogAiResponse(aiResponse);
         if (parsed.topics.length === 0) {
@@ -1585,6 +1600,7 @@ ${sourceText}`;
           !data.brokers &&
           !data.identities &&
           !data.aiConfig &&
+          !data.aiPrompts &&
           data.sidebarOpen === undefined &&
           !data.language &&
           !data.theme &&
@@ -1610,6 +1626,9 @@ ${sourceText}`;
         if (data.brokers && Array.isArray(data.brokers)) setBrokers(data.brokers);
         if (data.identities && Array.isArray(data.identities)) setIdentities(data.identities);
         if (data.aiConfig && typeof data.aiConfig === 'object') setAiConfig({ ...DEFAULT_AI_CONFIG, ...data.aiConfig });
+        if (data.aiPrompts && typeof data.aiPrompts === 'object') {
+          setAiPrompts(normalizeAiPrompts(data.aiPrompts));
+        }
         if (typeof data.sidebarOpen === 'boolean') setSidebarOpen(data.sidebarOpen);
         if (data.theme === 'dark' || data.theme === 'light') setTheme(data.theme);
         if (data.language && SUPPORTED_LANGUAGES.includes(data.language as SupportedLanguage)) {
@@ -1746,7 +1765,7 @@ ${sourceText}`;
     }
   };
 
-  const openSettings = (tab: 'general' | 'ai' | 'brokers' | 'identities' = 'general') => {
+  const openSettings = (tab: 'general' | 'ai' | 'prompts' | 'brokers' | 'identities' = 'general') => {
     setSettingsTab(tab);
     setIsSettingsOpen(true);
   };
@@ -1850,11 +1869,26 @@ ${sourceText}`;
       apiKey: aiConfig.apiKey?.trim() || '',
       model: aiConfig.model?.trim() || '',
     };
+    const normalizedDescription =
+      description.trim() || aiPrompts.payloadDescriptionFallback.trim();
+    const userPrompt = renderPromptTemplate(aiPrompts.payloadUserPromptTemplate, {
+      topic,
+      description: normalizedDescription,
+    });
 
     try {
-      return await invokeCommand<string>('ai_generate_payload', { topic, description, options });
+      return await invokeCommand<string>('ai_generate_payload', {
+        topic,
+        description: userPrompt,
+        options,
+        promptSystem: aiPrompts.payloadSystemPrompt,
+        promptUser: userPrompt,
+      });
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
+      if (detail.includes('AI user prompt is missing')) {
+        throw new Error(t('topicWorkbench.aiPromptMissing'));
+      }
       throw new Error(detail || t('publisher.aiFailed'));
     }
   };
@@ -2202,6 +2236,7 @@ ${sourceText}`;
           language={currentLanguage}
           theme={theme}
           aiConfig={aiConfig}
+          aiPrompts={aiPrompts}
           configFilePath={configPaths?.configFile}
           onLanguageChange={(language) => {
             if (SUPPORTED_LANGUAGES.includes(language)) {
@@ -2216,6 +2251,7 @@ ${sourceText}`;
             void exportConfig();
           }}
           onAiConfigChange={(nextAiConfig) => setAiConfig({ ...DEFAULT_AI_CONFIG, ...nextAiConfig })}
+          onAiPromptsChange={(nextAiPrompts) => setAiPrompts(normalizeAiPrompts(nextAiPrompts))}
           onSaveBroker={(b) => setBrokers(prev => { const exists = prev.find(x => x.id === b.id); if (exists) return prev.map(x => x.id === b.id ? b : x); return [...prev, b]; })}
           onDeleteBroker={(id) => setBrokers(prev => prev.filter(b => b.id !== id))}
           onSaveIdentity={(i) => setIdentities(prev => { const exists = prev.find(x => x.id === i.id); if (exists) return prev.map(x => x.id === i.id ? i : x); return [...prev, i]; })}

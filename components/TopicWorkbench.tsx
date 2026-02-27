@@ -339,7 +339,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
     try {
       const generated = await onGeneratePayload(
         activeTopic.topic,
-        activeTopic.description || t('publisher.aiPrompt')
+        activeTopic.description || ''
       );
       updateActiveTopic({ payloadTemplate: generated });
     } catch (error) {

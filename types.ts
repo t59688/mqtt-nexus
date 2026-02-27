@@ -72,6 +72,14 @@ export interface AiConfig {
   model?: string;
 }
 
+export interface AiPromptsConfig {
+  payloadSystemPrompt: string;
+  payloadUserPromptTemplate: string;
+  payloadDescriptionFallback: string;
+  topicCatalogSystemPrompt: string;
+  topicCatalogUserPromptTemplate: string;
+}
+
 export interface PayloadTemplate {
   id: string;
   name: string;
@@ -129,6 +137,7 @@ export interface NativeAppConfig {
   brokers: BrokerConfig[];
   identities: AuthIdentity[];
   aiConfig?: AiConfig;
+  aiPrompts?: Partial<AiPromptsConfig>;
   sidebarOpen?: boolean;
   language?: string;
   theme?: 'light' | 'dark';

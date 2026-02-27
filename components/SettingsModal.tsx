@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BrokerConfig, AuthIdentity, AiConfig } from '../types';
+import { BrokerConfig, AuthIdentity, AiConfig, AiPromptsConfig } from '../types';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n';
-import { DEFAULT_BROKER, DEFAULT_IDENTITY } from '../constants';
+import { DEFAULT_AI_PROMPTS, DEFAULT_BROKER, DEFAULT_IDENTITY } from '../constants';
 import foxEmblem from '../assets/fox-emblem.svg';
 import { openExternalUrl } from '../services/externalLink';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialTab?: 'general' | 'ai' | 'brokers' | 'identities';
+  initialTab?: 'general' | 'ai' | 'prompts' | 'brokers' | 'identities';
 
   brokers: BrokerConfig[];
   identities: AuthIdentity[];
@@ -21,6 +21,7 @@ interface SettingsModalProps {
   language: SupportedLanguage;
   theme: 'light' | 'dark';
   aiConfig: AiConfig;
+  aiPrompts: AiPromptsConfig;
   configFilePath?: string;
   onLanguageChange: (language: SupportedLanguage) => void;
   onThemeChange: (theme: 'light' | 'dark') => void;
@@ -29,13 +30,59 @@ interface SettingsModalProps {
   onImportConfig: () => void;
   onExportConfig: () => void;
   onAiConfigChange: (config: AiConfig) => void;
+  onAiPromptsChange: (config: AiPromptsConfig) => void;
 }
+
+type PromptEditorTab = 'payload' | 'topicCatalog';
+type PromptNoticeTone = 'success' | 'error' | 'info';
+
+interface PromptToolNotice {
+  message: string;
+  tone: PromptNoticeTone;
+}
+
+interface PromptTemplateFile {
+  magic?: string;
+  version?: string;
+  prompts?: unknown;
+}
+
+const PROMPTS_TEMPLATE_MAGIC = 'MQTT_NEXUS_AI_PROMPTS_TEMPLATE_V1';
+const PROMPTS_TEMPLATE_VERSION = '1.0';
 
 const getBrokerProtocolDefaults = (protocol: BrokerConfig['protocol']) => ({
   port: protocol === 'mqtt' ? 1883 : protocol === 'mqtts' ? 8883 : protocol === 'ws' ? 8083 : 8084,
   path: protocol === 'ws' || protocol === 'wss' ? '/mqtt' : '',
   ssl: protocol === 'mqtts' || protocol === 'wss',
 });
+
+const normalizePromptConfig = (value: unknown): AiPromptsConfig => {
+  if (!value || typeof value !== 'object') {
+    return { ...DEFAULT_AI_PROMPTS };
+  }
+
+  const raw = value as Partial<AiPromptsConfig>;
+  return {
+    payloadSystemPrompt:
+      typeof raw.payloadSystemPrompt === 'string' ? raw.payloadSystemPrompt : DEFAULT_AI_PROMPTS.payloadSystemPrompt,
+    payloadUserPromptTemplate:
+      typeof raw.payloadUserPromptTemplate === 'string'
+        ? raw.payloadUserPromptTemplate
+        : DEFAULT_AI_PROMPTS.payloadUserPromptTemplate,
+    payloadDescriptionFallback:
+      typeof raw.payloadDescriptionFallback === 'string'
+        ? raw.payloadDescriptionFallback
+        : DEFAULT_AI_PROMPTS.payloadDescriptionFallback,
+    topicCatalogSystemPrompt:
+      typeof raw.topicCatalogSystemPrompt === 'string'
+        ? raw.topicCatalogSystemPrompt
+        : DEFAULT_AI_PROMPTS.topicCatalogSystemPrompt,
+    topicCatalogUserPromptTemplate:
+      typeof raw.topicCatalogUserPromptTemplate === 'string'
+        ? raw.topicCatalogUserPromptTemplate
+        : DEFAULT_AI_PROMPTS.topicCatalogUserPromptTemplate,
+  };
+};
 
 const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
@@ -50,6 +97,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   language,
   theme,
   aiConfig,
+  aiPrompts,
   configFilePath,
   onLanguageChange,
   onThemeChange,
@@ -58,9 +106,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   onImportConfig,
   onExportConfig,
   onAiConfigChange,
+  onAiPromptsChange,
 }) => {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<'general' | 'ai' | 'brokers' | 'identities'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'ai' | 'prompts' | 'brokers' | 'identities'>('general');
   const openSourceUrl = t('settingsModal.aboutValue.openSourceUrl');
   const authorUrl = t('settingsModal.aboutValue.authorUrl');
   const authorHomeUrl = t('settingsModal.aboutValue.authorHomeUrl');
@@ -82,12 +131,18 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const [editingIdentity, setEditingIdentity] = useState<AuthIdentity>(DEFAULT_IDENTITY);
   const [isEditingBroker, setIsEditingBroker] = useState(false);
   const [isEditingIdentity, setIsEditingIdentity] = useState(false);
+  const [promptEditorTab, setPromptEditorTab] = useState<PromptEditorTab>('payload');
+  const [promptToolNotice, setPromptToolNotice] = useState<PromptToolNotice | null>(null);
+  const promptFileInputRef = useRef<HTMLInputElement>(null);
+  const promptNoticeTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setActiveTab(initialTab);
       setIsEditingBroker(false);
       setIsEditingIdentity(false);
+      setPromptEditorTab('payload');
+      setPromptToolNotice(null);
       setCopiedKey(null);
     }
   }, [isOpen, initialTab]);
@@ -96,6 +151,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     () => () => {
       if (copiedTimerRef.current) {
         window.clearTimeout(copiedTimerRef.current);
+      }
+      if (promptNoticeTimerRef.current) {
+        window.clearTimeout(promptNoticeTimerRef.current);
       }
     },
     []
@@ -150,6 +208,79 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     }
   };
 
+  const showPromptNotice = (message: string, tone: PromptNoticeTone = 'info') => {
+    setPromptToolNotice({ message, tone });
+    if (promptNoticeTimerRef.current) {
+      window.clearTimeout(promptNoticeTimerRef.current);
+    }
+    promptNoticeTimerRef.current = window.setTimeout(() => {
+      setPromptToolNotice(null);
+      promptNoticeTimerRef.current = null;
+    }, 3000);
+  };
+
+  const triggerPromptTemplateImport = () => {
+    promptFileInputRef.current?.click();
+  };
+
+  const handlePromptTemplateImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    void (async () => {
+      try {
+        const content = await file.text();
+        const parsed = JSON.parse(content) as PromptTemplateFile | AiPromptsConfig;
+        const hasWrapper = parsed && typeof parsed === 'object' && 'prompts' in parsed;
+        if (
+          hasWrapper &&
+          typeof (parsed as PromptTemplateFile).magic === 'string' &&
+          (parsed as PromptTemplateFile).magic !== PROMPTS_TEMPLATE_MAGIC
+        ) {
+          throw new Error('invalid_magic');
+        }
+
+        const candidate = hasWrapper ? (parsed as PromptTemplateFile).prompts : parsed;
+        const normalized = normalizePromptConfig(candidate);
+        onAiPromptsChange(normalized);
+        showPromptNotice(t('settingsModal.promptTemplateImportSuccess'), 'success');
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : '';
+        if (reason === 'invalid_magic') {
+          showPromptNotice(t('settingsModal.promptTemplateInvalidMagic'), 'error');
+        } else {
+          showPromptNotice(t('settingsModal.promptTemplateImportFailed'), 'error');
+        }
+      } finally {
+        if (promptFileInputRef.current) {
+          promptFileInputRef.current.value = '';
+        }
+      }
+    })();
+  };
+
+  const handlePromptTemplateExport = () => {
+    const payload = {
+      magic: PROMPTS_TEMPLATE_MAGIC,
+      version: PROMPTS_TEMPLATE_VERSION,
+      exportedAt: Date.now(),
+      prompts: aiPrompts,
+    };
+    const serialized = JSON.stringify(payload, null, 2);
+    const blob = new Blob([serialized], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mqtt-nexus-ai-prompts-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showPromptNotice(t('settingsModal.promptTemplateExported'), 'success');
+  };
+
   if (!isOpen) {
     return null;
   }
@@ -160,7 +291,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col h-[80vh]">
         <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 pt-4 pb-0">
-          <div className="flex gap-6">
+          <div className="flex gap-6 flex-wrap">
             <button
               onClick={() => setActiveTab('general')}
               className={`pb-4 px-2 text-sm font-bold border-b-2 transition-colors ${activeTab === 'general' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
@@ -172,6 +303,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               className={`pb-4 px-2 text-sm font-bold border-b-2 transition-colors ${activeTab === 'ai' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
             >
               <i className="fas fa-robot mr-2"></i> {t('settingsModal.tabAi')}
+            </button>
+            <button
+              onClick={() => setActiveTab('prompts')}
+              className={`pb-4 px-2 text-sm font-bold border-b-2 transition-colors ${activeTab === 'prompts' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            >
+              <i className="fas fa-quote-right mr-2"></i> {t('settingsModal.tabPrompts')}
             </button>
             <button
               onClick={() => setActiveTab('brokers')}
@@ -451,6 +588,223 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   <i className="fas fa-circle-info mr-2"></i>
                   {t('settingsModal.aiTip')}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'prompts' && (
+            <div className="h-full p-6 overflow-y-auto custom-scrollbar">
+              <div className="max-w-4xl mx-auto space-y-6">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                  <h3 className="text-lg font-bold text-slate-800 mb-1">{t('settingsModal.promptsTitle')}</h3>
+                  <p className="text-xs text-slate-500">{t('settingsModal.promptsDescription')}</p>
+                </div>
+
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1">
+                      <button
+                        onClick={() => setPromptEditorTab('payload')}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                          promptEditorTab === 'payload'
+                            ? 'bg-white text-indigo-700 shadow-sm border border-indigo-200'
+                            : 'text-slate-500 hover:text-slate-700'
+                        }`}
+                      >
+                        {t('settingsModal.promptPayloadSection')}
+                      </button>
+                      <button
+                        onClick={() => setPromptEditorTab('topicCatalog')}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                          promptEditorTab === 'topicCatalog'
+                            ? 'bg-white text-indigo-700 shadow-sm border border-indigo-200'
+                            : 'text-slate-500 hover:text-slate-700'
+                        }`}
+                      >
+                        {t('settingsModal.promptTopicCatalogSection')}
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        ref={promptFileInputRef}
+                        type="file"
+                        className="hidden"
+                        accept=".json,application/json"
+                        onChange={handlePromptTemplateImport}
+                      />
+                      <button
+                        onClick={triggerPromptTemplateImport}
+                        className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-600 hover:border-indigo-400 hover:text-indigo-600"
+                      >
+                        <i className="fas fa-file-import mr-1"></i>
+                        {t('settingsModal.promptTemplateImport')}
+                      </button>
+                      <button
+                        onClick={handlePromptTemplateExport}
+                        className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-600 hover:border-indigo-400 hover:text-indigo-600"
+                      >
+                        <i className="fas fa-file-export mr-1"></i>
+                        {t('settingsModal.promptTemplateExport')}
+                      </button>
+                    </div>
+                  </div>
+                  {promptToolNotice && (
+                    <div
+                      className={`rounded-lg border px-3 py-2 text-xs ${
+                        promptToolNotice.tone === 'success'
+                          ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                          : promptToolNotice.tone === 'error'
+                            ? 'border-red-200 bg-red-50 text-red-700'
+                            : 'border-slate-200 bg-slate-50 text-slate-600'
+                      }`}
+                    >
+                      {promptToolNotice.message}
+                    </div>
+                  )}
+                </div>
+
+                {promptEditorTab === 'payload' && (
+                  <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider">
+                        {t('settingsModal.promptPayloadSection')}
+                      </h4>
+                      <button
+                        onClick={() =>
+                          onAiPromptsChange({
+                            ...aiPrompts,
+                            payloadSystemPrompt: DEFAULT_AI_PROMPTS.payloadSystemPrompt,
+                            payloadUserPromptTemplate: DEFAULT_AI_PROMPTS.payloadUserPromptTemplate,
+                            payloadDescriptionFallback: DEFAULT_AI_PROMPTS.payloadDescriptionFallback,
+                          })
+                        }
+                        className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-600 hover:border-indigo-400 hover:text-indigo-600"
+                      >
+                        {t('settingsModal.promptResetDefaults')}
+                      </button>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">
+                        {t('settingsModal.promptSystemLabel')}
+                      </label>
+                      <textarea
+                        value={aiPrompts.payloadSystemPrompt}
+                        onChange={(event) =>
+                          onAiPromptsChange({ ...aiPrompts, payloadSystemPrompt: event.target.value })
+                        }
+                        rows={3}
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">
+                        {t('settingsModal.promptUserTemplateLabel')}
+                      </label>
+                      <textarea
+                        value={aiPrompts.payloadUserPromptTemplate}
+                        onChange={(event) =>
+                          onAiPromptsChange({
+                            ...aiPrompts,
+                            payloadUserPromptTemplate: event.target.value,
+                          })
+                        }
+                        rows={6}
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-sm font-mono focus:ring-2 focus:ring-indigo-500"
+                      />
+                      <p className="mt-1 text-[11px] text-slate-500">
+                        {t('settingsModal.promptTemplateHintPayload')}
+                        <span className="ml-1 font-mono text-slate-600">{'{{topic}}'}</span>
+                        <span className="mx-1 text-slate-400">/</span>
+                        <span className="font-mono text-slate-600">{'{{description}}'}</span>
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">
+                        {t('settingsModal.promptDescriptionFallbackLabel')}
+                      </label>
+                      <textarea
+                        value={aiPrompts.payloadDescriptionFallback}
+                        onChange={(event) =>
+                          onAiPromptsChange({
+                            ...aiPrompts,
+                            payloadDescriptionFallback: event.target.value,
+                          })
+                        }
+                        rows={3}
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {promptEditorTab === 'topicCatalog' && (
+                  <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider">
+                        {t('settingsModal.promptTopicCatalogSection')}
+                      </h4>
+                      <button
+                        onClick={() =>
+                          onAiPromptsChange({
+                            ...aiPrompts,
+                            topicCatalogSystemPrompt: DEFAULT_AI_PROMPTS.topicCatalogSystemPrompt,
+                            topicCatalogUserPromptTemplate:
+                              DEFAULT_AI_PROMPTS.topicCatalogUserPromptTemplate,
+                          })
+                        }
+                        className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-600 hover:border-indigo-400 hover:text-indigo-600"
+                      >
+                        {t('settingsModal.promptResetDefaults')}
+                      </button>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">
+                        {t('settingsModal.promptSystemLabel')}
+                      </label>
+                      <textarea
+                        value={aiPrompts.topicCatalogSystemPrompt}
+                        onChange={(event) =>
+                          onAiPromptsChange({
+                            ...aiPrompts,
+                            topicCatalogSystemPrompt: event.target.value,
+                          })
+                        }
+                        rows={3}
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">
+                        {t('settingsModal.promptUserTemplateLabel')}
+                      </label>
+                      <textarea
+                        value={aiPrompts.topicCatalogUserPromptTemplate}
+                        onChange={(event) =>
+                          onAiPromptsChange({
+                            ...aiPrompts,
+                            topicCatalogUserPromptTemplate: event.target.value,
+                          })
+                        }
+                        rows={12}
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-sm font-mono focus:ring-2 focus:ring-indigo-500"
+                      />
+                      <p className="mt-1 text-[11px] text-slate-500">
+                        {t('settingsModal.promptTemplateHintCatalog')}
+                        <span className="ml-1 font-mono text-slate-600">{'{{responseLanguage}}'}</span>
+                        <span className="mx-1 text-slate-400">/</span>
+                        <span className="font-mono text-slate-600">{'{{sourceName}}'}</span>
+                        <span className="mx-1 text-slate-400">/</span>
+                        <span className="font-mono text-slate-600">{'{{sourceText}}'}</span>
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

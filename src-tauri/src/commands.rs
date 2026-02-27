@@ -90,8 +90,17 @@ pub async fn ai_generate_payload(
     topic: String,
     description: String,
     options: Option<AiConfig>,
+    prompt_system: Option<String>,
+    prompt_user: Option<String>,
 ) -> Result<String, String> {
-    generate_payload(&topic, &description, &state.ai_defaults, &options)
+    generate_payload(
+        &topic,
+        &description,
+        &state.ai_defaults,
+        &options,
+        prompt_system.as_deref(),
+        prompt_user.as_deref(),
+    )
         .await
         .map_err(|e| e.to_string())
 }

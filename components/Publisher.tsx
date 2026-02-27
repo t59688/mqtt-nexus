@@ -85,7 +85,7 @@ const Publisher: React.FC<PublisherProps> = ({
 
     setIsGenerating(true);
     try {
-      const newPayload = await onGeneratePayload(topic, t('publisher.aiPrompt'));
+      const newPayload = await onGeneratePayload(topic, '');
       setPayload(newPayload);
     } catch (error) {
       const message = error instanceof Error ? error.message : t('publisher.aiFailed');

@@ -9,6 +9,8 @@ pub async fn generate_payload(
     description: &str,
     defaults: &AiConfig,
     options: &Option<AiConfig>,
+    prompt_system: Option<&str>,
+    prompt_user: Option<&str>,
 ) -> Result<String> {
     let merged = merge_config(defaults, options);
 
@@ -39,9 +41,13 @@ pub async fn generate_payload(
         .filter(|value| !value.is_empty())
         .ok_or_else(|| anyhow!("AI model is missing"))?;
 
-    let prompt = format!(
-        "You are an MQTT payload generator. Topic: \"{topic}\". Description: \"{description}\". Return only valid JSON with no markdown fences."
-    );
+    let prompt = prompt_user
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| description.trim());
+    if prompt.is_empty() {
+        return Err(anyhow!("AI user prompt is missing"));
+    }
 
     let client = openai::Client::builder()
         .api_key(api_key)
@@ -49,15 +55,20 @@ pub async fn generate_payload(
         .build()
         .context("failed to build OpenAI-compatible client")?;
 
-    let agent = client
+    let mut agent_builder = client
         .completion_model(model)
         .completions_api()
-        .into_agent_builder()
-        .preamble("You generate realistic MQTT payloads and return strict JSON only.")
-        .build();
+        .into_agent_builder();
+    if let Some(system_prompt) = prompt_system
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+    {
+        agent_builder = agent_builder.preamble(system_prompt);
+    }
+    let agent = agent_builder.build();
 
     let response = agent
-        .prompt(&prompt)
+        .prompt(prompt)
         .await
         .context("AI generation request failed")?;
 
