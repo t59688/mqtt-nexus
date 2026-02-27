@@ -6,6 +6,12 @@
 
 **语言：** [English](README.en.md) · [中文](README.md)
 
+**推荐阅读：**
+
+- [docs/为何使用NexusMQTT.md](docs/%E4%B8%BA%E4%BD%95%E4%BD%BF%E7%94%A8NexusMQTT.md)：从使用场景与问题出发的全景介绍
+- [docs/features.cn.md](docs/features.cn.md)：完整特性与交互说明
+- [docs/features.en.md](docs/features.en.md)：英文版特性说明
+
 <img width="1911" height="1011" alt="主界面" src="https://github.com/user-attachments/assets/0de6b909-ef86-4cd5-9e6e-2bf511148bc9" />
 <img width="1914" height="1009" alt="主题工作台" src="https://github.com/user-attachments/assets/ebf68ced-ea6c-4fbe-8f5f-de725ff88032" />
 <img width="1904" height="983" alt="消息日志" src="https://github.com/user-attachments/assets/bc73dbe6-6327-457c-bb05-94ce74c6f575" />

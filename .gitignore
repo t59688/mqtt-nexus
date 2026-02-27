@@ -26,3 +26,5 @@ src-tauri/gen/
 *.njsproj
 *.sln
 *.sw?
+
+.cursor

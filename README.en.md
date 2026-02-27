@@ -6,6 +6,12 @@ A professional-grade, multi-connection MQTT client for desktop and web. Built wi
 
 **Language:** [English](README.en.md) · [中文](README.md)
 
+**Recommended reading:**
+
+- [docs/Why-use-NexusMQTT.md](docs/Why-use-NexusMQTT.md): high-level overview of what NexusMQTT solves
+- [docs/features.en.md](docs/features.en.md): full feature list and UX details
+- [docs/features.cn.md](docs/features.cn.md): Chinese version of the feature documentation
+
 <img width="1911" height="1011" alt="Main UI" src="https://github.com/user-attachments/assets/0de6b909-ef86-4cd5-9e6e-2bf511148bc9" />
 <img width="1914" height="1009" alt="Topic workbench" src="https://github.com/user-attachments/assets/ebf68ced-ea6c-4fbe-8f5f-de725ff88032" />
 <img width="1904" height="983" alt="Message log" src="https://github.com/user-attachments/assets/bc73dbe6-6327-457c-bb05-94ce74c6f575" />
