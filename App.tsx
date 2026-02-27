@@ -89,12 +89,31 @@ interface ConfirmDialogState {
   resolver: (accepted: boolean) => void;
 }
 
+interface TopicCatalogAiDraft {
+  connectionId: string;
+  connectionName: string;
+  sourceName: string;
+  summary: string;
+  topics: TopicCatalogItem[];
+}
+
+interface ZipEntryMetadata {
+  name: string;
+  compressionMethod: number;
+  compressedSize: number;
+  localHeaderOffset: number;
+}
+
 const MAX_MESSAGES_PER_CONNECTION = 1000;
 const HISTORY_PAGE_SIZE = 200;
 const MAX_LOG_VIEW_MESSAGES = 10000;
 const TOPIC_DOC_VERSION = '1.0';
 const APP_CONFIG_MAGIC = 'MQTT_NEXUS_APP_CONFIG_V1';
 const TOPIC_CATALOG_MAGIC = 'MQTT_NEXUS_TOPIC_CATALOG_V1';
+const TOPIC_AI_SOURCE_MAX_CHARS = 24000;
+const ZIP_EOCD_SIGNATURE = 0x06054b50;
+const ZIP_CENTRAL_DIRECTORY_SIGNATURE = 0x02014b50;
+const ZIP_LOCAL_FILE_HEADER_SIGNATURE = 0x04034b50;
 
 const normalizeQos = (qos: number): 0 | 1 | 2 => (qos === 1 || qos === 2 ? qos : 0);
 const normalizeStatus = (status: string): ConnectionStatus => (['disconnected', 'connecting', 'connected', 'error'].includes(status) ? (status as ConnectionStatus) : 'error');
@@ -170,6 +189,276 @@ const normalizeTopicDocumentMap = (
     }
   });
   return out;
+};
+
+const stripMarkdownCodeFence = (value: string): string =>
+  value
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim();
+
+const extractJsonCandidate = (raw: string): string | null => {
+  const chars = Array.from(raw);
+  let start: number | null = null;
+  let braceDepth = 0;
+  let bracketDepth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let i = 0; i < chars.length; i += 1) {
+    const ch = chars[i];
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (ch === '\\') {
+        escaped = true;
+        continue;
+      }
+      if (ch === '"') {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (ch === '"') {
+      inString = true;
+      continue;
+    }
+
+    if (start === null) {
+      if (ch === '{' || ch === '[') {
+        start = i;
+        if (ch === '{') braceDepth = 1;
+        if (ch === '[') bracketDepth = 1;
+      }
+      continue;
+    }
+
+    if (ch === '{') braceDepth += 1;
+    if (ch === '}') braceDepth -= 1;
+    if (ch === '[') bracketDepth += 1;
+    if (ch === ']') bracketDepth -= 1;
+
+    if (braceDepth === 0 && bracketDepth === 0) {
+      return chars.slice(start, i + 1).join('');
+    }
+  }
+
+  return null;
+};
+
+const parseTopicCatalogAiResponse = (raw: string): { summary: string; topics: TopicCatalogItem[] } => {
+  const cleaned = stripMarkdownCodeFence(raw);
+  let parsed: unknown = null;
+
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch {
+    const candidate = extractJsonCandidate(cleaned);
+    if (!candidate) {
+      throw new Error('AI output does not contain valid JSON.');
+    }
+    parsed = JSON.parse(candidate);
+  }
+
+  let summary = '';
+  let rawTopics: unknown[] = [];
+
+  if (Array.isArray(parsed)) {
+    rawTopics = parsed;
+  } else if (parsed && typeof parsed === 'object') {
+    const payload = parsed as { summary?: unknown; topics?: unknown };
+    summary = sanitizeText(payload.summary);
+    if (Array.isArray(payload.topics)) {
+      rawTopics = payload.topics;
+    }
+  }
+
+  const normalizedTopics = rawTopics
+    .map((item) => sanitizeTopicItem(item))
+    .filter((item): item is TopicCatalogItem => item !== null);
+
+  const seenTopics = new Set<string>();
+  const topics = normalizedTopics.filter((item) => {
+    const key = item.topic.trim();
+    if (!key || seenTopics.has(key)) {
+      return false;
+    }
+    seenTopics.add(key);
+    return true;
+  });
+
+  return { summary, topics };
+};
+
+const findZipEocdOffset = (view: DataView): number => {
+  const lowerBound = Math.max(0, view.byteLength - 0x10000 - 22);
+  for (let i = view.byteLength - 22; i >= lowerBound; i -= 1) {
+    if (view.getUint32(i, true) === ZIP_EOCD_SIGNATURE) {
+      return i;
+    }
+  }
+  return -1;
+};
+
+const readZipEntries = (buffer: ArrayBuffer): ZipEntryMetadata[] => {
+  const view = new DataView(buffer);
+  const eocdOffset = findZipEocdOffset(view);
+  if (eocdOffset < 0) {
+    throw new Error('Invalid DOCX zip structure.');
+  }
+
+  const totalEntries = view.getUint16(eocdOffset + 10, true);
+  const directorySize = view.getUint32(eocdOffset + 12, true);
+  const directoryOffset = view.getUint32(eocdOffset + 16, true);
+  const decoder = new TextDecoder('utf-8');
+
+  const entries: ZipEntryMetadata[] = [];
+  let cursor = directoryOffset;
+  const directoryEnd = directoryOffset + directorySize;
+
+  for (let i = 0; i < totalEntries && cursor + 46 <= directoryEnd; i += 1) {
+    if (view.getUint32(cursor, true) !== ZIP_CENTRAL_DIRECTORY_SIGNATURE) {
+      break;
+    }
+
+    const compressionMethod = view.getUint16(cursor + 10, true);
+    const compressedSize = view.getUint32(cursor + 20, true);
+    const fileNameLength = view.getUint16(cursor + 28, true);
+    const extraLength = view.getUint16(cursor + 30, true);
+    const commentLength = view.getUint16(cursor + 32, true);
+    const localHeaderOffset = view.getUint32(cursor + 42, true);
+
+    const fileNameStart = cursor + 46;
+    const fileName = decoder.decode(new Uint8Array(buffer, fileNameStart, fileNameLength));
+    entries.push({
+      name: fileName,
+      compressionMethod,
+      compressedSize,
+      localHeaderOffset,
+    });
+
+    cursor += 46 + fileNameLength + extraLength + commentLength;
+  }
+
+  return entries;
+};
+
+const extractZipEntryData = (buffer: ArrayBuffer, entry: ZipEntryMetadata): Uint8Array => {
+  const view = new DataView(buffer);
+  const localHeaderOffset = entry.localHeaderOffset;
+  if (localHeaderOffset + 30 > view.byteLength) {
+    throw new Error('Invalid local file header offset.');
+  }
+  if (view.getUint32(localHeaderOffset, true) !== ZIP_LOCAL_FILE_HEADER_SIGNATURE) {
+    throw new Error('Invalid local file header signature.');
+  }
+
+  const fileNameLength = view.getUint16(localHeaderOffset + 26, true);
+  const extraLength = view.getUint16(localHeaderOffset + 28, true);
+  const dataStart = localHeaderOffset + 30 + fileNameLength + extraLength;
+  const dataEnd = dataStart + entry.compressedSize;
+  if (dataEnd > view.byteLength) {
+    throw new Error('Invalid compressed payload bounds.');
+  }
+  return new Uint8Array(buffer.slice(dataStart, dataEnd));
+};
+
+const inflateDeflateRaw = async (payload: Uint8Array): Promise<Uint8Array> => {
+  if (typeof DecompressionStream === 'undefined') {
+    throw new Error('This runtime does not support DOCX decompression.');
+  }
+
+  const stream = new Blob([payload]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+  const out = await new Response(stream).arrayBuffer();
+  return new Uint8Array(out);
+};
+
+const extractTextFromWordprocessingXml = (xml: string): string => {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xml, 'application/xml');
+  if (doc.getElementsByTagName('parsererror').length > 0) {
+    throw new Error('Failed to parse DOCX XML.');
+  }
+
+  const paragraphs = Array.from(doc.getElementsByTagName('w:p'))
+    .map((paragraph) =>
+      Array.from(paragraph.getElementsByTagName('w:t'))
+        .map((node) => node.textContent || '')
+        .join('')
+        .trim()
+    )
+    .filter((line) => line.length > 0);
+
+  return paragraphs.join('\n').trim();
+};
+
+const readDocxAsText = async (buffer: ArrayBuffer): Promise<string> => {
+  const entries = readZipEntries(buffer);
+  const documentXmlEntry = entries.find((entry) => entry.name === 'word/document.xml');
+  if (!documentXmlEntry) {
+    throw new Error('DOCX document.xml not found.');
+  }
+
+  const compressed = extractZipEntryData(buffer, documentXmlEntry);
+  let xmlBytes: Uint8Array;
+  if (documentXmlEntry.compressionMethod === 0) {
+    xmlBytes = compressed;
+  } else if (documentXmlEntry.compressionMethod === 8) {
+    xmlBytes = await inflateDeflateRaw(compressed);
+  } else {
+    throw new Error(`Unsupported DOCX compression method: ${documentXmlEntry.compressionMethod}`);
+  }
+
+  const xml = new TextDecoder('utf-8').decode(xmlBytes);
+  return extractTextFromWordprocessingXml(xml);
+};
+
+const cleanupLegacyWordText = (raw: string): string =>
+  raw
+    .replace(/\u0000/g, ' ')
+    .replace(/[\u0001-\u001f]/g, ' ')
+    .replace(/[^\x20-\x7E\u4E00-\u9FFF\r\n\t]/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+const scoreTextCandidate = (value: string): number => {
+  if (!value) {
+    return 0;
+  }
+  const readable = (value.match(/[A-Za-z0-9\u4E00-\u9FFF]/g) || []).length;
+  return readable / value.length;
+};
+
+const readLegacyWordAsText = (buffer: ArrayBuffer): string => {
+  const utf8 = cleanupLegacyWordText(new TextDecoder('utf-8', { fatal: false }).decode(buffer));
+  const utf16 = cleanupLegacyWordText(new TextDecoder('utf-16le', { fatal: false }).decode(buffer));
+  const best = scoreTextCandidate(utf16) >= scoreTextCandidate(utf8) ? utf16 : utf8;
+  if (!best || scoreTextCandidate(best) < 0.2) {
+    throw new Error('Unable to parse legacy .doc file reliably. Please convert to .docx.');
+  }
+  return best;
+};
+
+const readTopicProtocolSource = async (file: File): Promise<string> => {
+  const lowerName = file.name.toLowerCase();
+  if (lowerName.endsWith('.txt') || lowerName.endsWith('.md')) {
+    return file.text();
+  }
+
+  const buffer = await file.arrayBuffer();
+  if (lowerName.endsWith('.docx')) {
+    return readDocxAsText(buffer);
+  }
+
+  if (lowerName.endsWith('.doc')) {
+    return readLegacyWordAsText(buffer);
+  }
+
+  throw new Error('Unsupported document type.');
 };
 
 const normalizeProfile = (profile: ConnectionProfile): ConnectionProfile => {
@@ -291,9 +580,13 @@ const App: React.FC = () => {
   const [lastExportFormat, setLastExportFormat] = useState<'ndjson' | 'csv'>('ndjson');
   const [isExportingHistory, setIsExportingHistory] = useState(false);
   const [topicImportTargetId, setTopicImportTargetId] = useState<string | null>(null);
+  const [topicAiImportTargetId, setTopicAiImportTargetId] = useState<string | null>(null);
+  const [topicAiDraft, setTopicAiDraft] = useState<TopicCatalogAiDraft | null>(null);
+  const [isGeneratingTopicAiDraft, setIsGeneratingTopicAiDraft] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const topicFileInputRef = useRef<HTMLInputElement>(null);
+  const topicAiFileInputRef = useRef<HTMLInputElement>(null);
   const lastSavedConfigRef = useRef('');
   const toastTimersRef = useRef<number[]>([]);
   const activityTimersRef = useRef<number[]>([]);
@@ -1021,6 +1314,186 @@ const App: React.FC = () => {
     topicFileInputRef.current?.click();
   };
 
+  const resetTopicAiImportSelection = () => {
+    if (topicAiFileInputRef.current) {
+      topicAiFileInputRef.current.value = '';
+    }
+    setTopicAiImportTargetId(null);
+  };
+
+  const triggerTopicCatalogAiImport = (connectionId: string) => {
+    if (!connections[connectionId]) {
+      pushToast(t('topicWorkbench.connectionMissing'), 'error');
+      return;
+    }
+    if (isGeneratingTopicAiDraft) {
+      return;
+    }
+    setTopicAiImportTargetId(connectionId);
+    topicAiFileInputRef.current?.click();
+  };
+
+  const buildTopicCatalogAiPrompt = (sourceName: string, sourceText: string) => {
+    const responseLanguage = currentLanguage === 'zh' ? 'Chinese' : 'English';
+    return `You are an MQTT protocol analyst.
+Read the protocol document and generate a practical MQTT topic catalog.
+Return strict JSON only. No markdown fences.
+Response language for textual fields (name/description/summary): ${responseLanguage}.
+Keep topic strings unchanged from protocol definitions.
+
+Output JSON shape:
+{
+  "summary": "short summary",
+  "topics": [
+    {
+      "name": "display name",
+      "topic": "device/+/status",
+      "direction": "publish | subscribe | both",
+      "qos": 0,
+      "retain": false,
+      "contentType": "application/json",
+      "description": "what this topic means",
+      "tags": ["tag1", "tag2"],
+      "payloadTemplate": "{\\"field\\":\\"value\\"}",
+      "payloadExample": "{\\"field\\":\\"example\\"}",
+      "schema": "{\\"type\\":\\"object\\"}"
+    }
+  ]
+}
+
+Rules:
+1. Include only meaningful business topics from the document.
+2. Infer direction from protocol semantics.
+3. qos must be 0/1/2 and retain must be boolean.
+4. payloadTemplate/payloadExample/schema can be empty string when unknown.
+5. Keep topics unique by topic path.
+
+Source file: ${sourceName}
+Protocol document:
+${sourceText}`;
+  };
+
+  const mapTopicAiImportError = (error: unknown): string => {
+    const detail = error instanceof Error ? error.message : String(error);
+    if (!detail) {
+      return t('topicWorkbench.aiImportFailed');
+    }
+    if (detail.includes('Unsupported document type')) {
+      return t('topicWorkbench.aiImportUnsupportedType');
+    }
+    if (detail.includes('legacy .doc')) {
+      return t('topicWorkbench.aiImportLegacyDocHint');
+    }
+    if (detail.includes('DOCX')) {
+      return t('topicWorkbench.aiImportParseFailed');
+    }
+    return detail;
+  };
+
+  const importConnectionTopicCatalogByAi = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const targetConnectionId = topicAiImportTargetId;
+    const file = e.target.files?.[0];
+    if (!file || !targetConnectionId) {
+      resetTopicAiImportSelection();
+      return;
+    }
+
+    const targetConnection = connections[targetConnectionId];
+    if (!targetConnection) {
+      pushToast(t('topicWorkbench.connectionMissing'), 'error');
+      resetTopicAiImportSelection();
+      return;
+    }
+
+    void (async () => {
+      setIsGeneratingTopicAiDraft(true);
+      const activityId = startActivity(
+        t('topicWorkbench.aiImportActivity'),
+        `${targetConnection.profile.name} / ${file.name}`
+      );
+
+      try {
+        const sourceText = (await readTopicProtocolSource(file)).trim();
+        if (!sourceText) {
+          throw new Error(t('topicWorkbench.aiImportSourceEmpty'));
+        }
+
+        const truncatedText = sourceText.slice(0, TOPIC_AI_SOURCE_MAX_CHARS);
+        if (truncatedText.length < sourceText.length) {
+          pushToast(
+            t('topicWorkbench.aiImportTruncated', { max: TOPIC_AI_SOURCE_MAX_CHARS }),
+            'info'
+          );
+        }
+
+        const options: AiConfig = {
+          baseUrl: aiConfig.baseUrl?.trim() || '',
+          apiKey: aiConfig.apiKey?.trim() || '',
+          model: aiConfig.model?.trim() || '',
+        };
+
+        const aiResponse = await invokeCommand<string>('ai_generate_payload', {
+          topic: 'mqtt/topic-catalog-from-protocol',
+          description: buildTopicCatalogAiPrompt(file.name, truncatedText),
+          options,
+        });
+        const parsed = parseTopicCatalogAiResponse(aiResponse);
+        if (parsed.topics.length === 0) {
+          throw new Error(t('topicWorkbench.aiImportNoTopics'));
+        }
+
+        setTopicAiDraft({
+          connectionId: targetConnectionId,
+          connectionName: targetConnection.profile.name,
+          sourceName: file.name,
+          summary: parsed.summary,
+          topics: parsed.topics,
+        });
+
+        finishActivity(
+          activityId,
+          'success',
+          t('topicWorkbench.aiImportReady', { count: parsed.topics.length })
+        );
+      } catch (error) {
+        const detail = mapTopicAiImportError(error);
+        finishActivity(activityId, 'error', detail);
+        pushToast(detail, 'error');
+      } finally {
+        setIsGeneratingTopicAiDraft(false);
+        resetTopicAiImportSelection();
+      }
+    })();
+  };
+
+  const applyAiTopicCatalogDraft = () => {
+    if (!topicAiDraft) {
+      return;
+    }
+
+    const targetConnection = connections[topicAiDraft.connectionId];
+    if (!targetConnection) {
+      pushToast(t('topicWorkbench.connectionMissing'), 'error');
+      setTopicAiDraft(null);
+      return;
+    }
+
+    upsertConnectionTopicDocument(topicAiDraft.connectionId, {
+      version: TOPIC_DOC_VERSION,
+      updatedAt: Date.now(),
+      topics: topicAiDraft.topics,
+    });
+
+    pushToast(
+      t('topicWorkbench.importSuccess', {
+        count: topicAiDraft.topics.length,
+        name: targetConnection.profile.name,
+      }),
+      'success'
+    );
+    setTopicAiDraft(null);
+  };
+
   const importConnectionTopicCatalog = (e: React.ChangeEvent<HTMLInputElement>) => {
     const targetConnectionId = topicImportTargetId;
     const file = e.target.files?.[0];
@@ -1665,7 +2138,9 @@ const App: React.FC = () => {
                     onGeneratePayload={generatePayload}
                     onNotify={(message, tone: NoticeTone = 'info') => pushToast(message, tone)}
                     onImport={() => triggerTopicCatalogImport(activeConnection.profile.id)}
+                    onAiImport={() => triggerTopicCatalogAiImport(activeConnection.profile.id)}
                     onExport={() => exportConnectionTopicCatalog(activeConnection.profile.id)}
+                    isAiImporting={isGeneratingTopicAiDraft}
                     onConfirmDeleteTopic={confirmDeleteTopic}
                   />
                 </div>
@@ -1774,6 +2249,81 @@ const App: React.FC = () => {
           className="hidden"
           accept=".json"
         />
+        <input
+          type="file"
+          ref={topicAiFileInputRef}
+          onChange={importConnectionTopicCatalogByAi}
+          className="hidden"
+          accept=".txt,.md,.doc,.docx,text/plain,text/markdown,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        />
+
+        {topicAiDraft && (
+          <div
+            className="fixed inset-0 z-[118] flex items-center justify-center bg-black/45 backdrop-blur-sm p-4"
+            onClick={() => setTopicAiDraft(null)}
+          >
+            <div
+              className="w-full max-w-4xl max-h-[88vh] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl flex flex-col"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="px-5 py-4 border-b border-slate-100">
+                <h3 className="text-base font-bold text-slate-800">{t('topicWorkbench.aiImportPreviewTitle')}</h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  {t('topicWorkbench.aiImportPreviewDesc', {
+                    name: topicAiDraft.connectionName,
+                    file: topicAiDraft.sourceName,
+                    count: topicAiDraft.topics.length,
+                  })}
+                </p>
+              </div>
+              <div className="px-5 py-4 space-y-3 overflow-y-auto">
+                {topicAiDraft.summary && (
+                  <div className="rounded-lg border border-indigo-100 bg-indigo-50/70 px-3 py-2 text-sm text-indigo-700">
+                    {topicAiDraft.summary}
+                  </div>
+                )}
+                <div className="rounded-lg border border-slate-200 overflow-hidden">
+                  <div className="max-h-[52vh] overflow-auto">
+                    <table className="w-full text-xs">
+                      <thead className="bg-slate-50 text-slate-600 sticky top-0">
+                        <tr>
+                          <th className="text-left px-3 py-2 font-semibold">{t('topicWorkbench.previewName')}</th>
+                          <th className="text-left px-3 py-2 font-semibold">{t('topicWorkbench.previewTopic')}</th>
+                          <th className="text-left px-3 py-2 font-semibold">{t('topicWorkbench.previewDirection')}</th>
+                          <th className="text-left px-3 py-2 font-semibold">QoS</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {topicAiDraft.topics.map((item) => (
+                          <tr key={item.id} className="border-t border-slate-100">
+                            <td className="px-3 py-2 text-slate-700">{item.name || '-'}</td>
+                            <td className="px-3 py-2 font-mono text-slate-600">{item.topic}</td>
+                            <td className="px-3 py-2 text-slate-600">{t(`topicWorkbench.direction.${item.direction}`)}</td>
+                            <td className="px-3 py-2 text-slate-600">{item.qos}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div className="px-5 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-2">
+                <button
+                  onClick={() => setTopicAiDraft(null)}
+                  className="px-4 py-2 rounded-lg text-slate-500 hover:bg-slate-200 transition-colors text-sm font-medium"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  onClick={applyAiTopicCatalogDraft}
+                  className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors text-sm font-semibold"
+                >
+                  {t('topicWorkbench.aiImportConfirm')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {quickAction && connections[quickAction.id] && (
           <SimpleInputModal

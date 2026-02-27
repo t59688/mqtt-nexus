@@ -27,7 +27,9 @@ interface TopicWorkbenchProps {
   onGeneratePayload: (topic: string, description: string) => Promise<string>;
   onNotify?: (message: string, tone?: 'info' | 'success' | 'error') => void;
   onImport: () => void;
+  onAiImport: () => void;
   onExport: () => void;
+  isAiImporting?: boolean;
   onConfirmDeleteTopic: (topicName: string) => Promise<boolean>;
 }
 
@@ -152,7 +154,9 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
   onGeneratePayload,
   onNotify,
   onImport,
+  onAiImport,
   onExport,
+  isAiImporting = false,
   onConfirmDeleteTopic,
 }) => {
   const { t } = useTranslation();
@@ -798,6 +802,18 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
             >
               <i className="fas fa-file-import mr-1"></i>
               {t('common.import')}
+            </button>
+            <button
+              onClick={onAiImport}
+              disabled={isAiImporting}
+              className={`px-2 py-1 text-xs rounded border transition-colors ${
+                isAiImporting
+                  ? 'border-indigo-200 bg-indigo-50 text-indigo-400 cursor-not-allowed'
+                  : 'border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600'
+              }`}
+            >
+              <i className={`mr-1 ${isAiImporting ? 'fas fa-spinner fa-spin' : 'fas fa-wand-magic-sparkles'}`}></i>
+              {isAiImporting ? t('topicWorkbench.aiImporting') : t('topicWorkbench.aiImport')}
             </button>
             <button
               onClick={onExport}
