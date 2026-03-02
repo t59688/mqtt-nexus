@@ -1,10 +1,12 @@
-import { access } from 'node:fs/promises';
+import { access, copyFile } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawn } from 'node:child_process';
 
 const root = process.cwd();
 const svgPath = resolve(root, 'src-tauri', 'logo.svg');
+const tauriIcon128 = resolve(root, 'src-tauri', 'icons', '128x128.png');
+const publicAppIcon = resolve(root, 'public', 'app-icon.png');
 
 async function assertExists(path) {
   try {
@@ -38,6 +40,7 @@ function runTauriIcon(inputPath) {
 async function main() {
   await assertExists(svgPath);
   await runTauriIcon(svgPath);
+  await copyFile(tauriIcon128, publicAppIcon);
 }
 
 main().catch((err) => {
