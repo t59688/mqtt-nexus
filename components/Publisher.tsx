@@ -128,16 +128,16 @@ const Publisher: React.FC<PublisherProps> = ({
   const filteredHistory = history.filter((h) => h.topic.toLowerCase().includes(topic.toLowerCase()));
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-zinc-200 flex flex-col h-full overflow-hidden">
-      <div className="px-4 py-3 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
-        <h3 className="text-sm font-bold text-zinc-700 flex items-center gap-2">
+    <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm dark:shadow-black/20 border border-zinc-200 dark:border-zinc-700 flex flex-col h-full overflow-hidden">
+      <div className="px-4 py-3 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-800/30">
+        <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-100 flex items-center gap-2">
           <i className="fas fa-paper-plane text-indigo-500"></i>
           {t('publisher.title')}
         </h3>
         <div className="flex gap-1">
           <button
             onClick={() => setShowSaveTemplate(!showSaveTemplate)}
-            className="p-1.5 text-xs text-zinc-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+            className="p-1.5 text-xs text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/15 rounded transition-colors"
             title={t('publisher.saveTemplateTitle')}
           >
             <i className="fas fa-save"></i>
@@ -147,12 +147,12 @@ const Publisher: React.FC<PublisherProps> = ({
 
       <div className="p-4 flex-1 flex flex-col gap-4 overflow-y-auto">
         {showSaveTemplate && (
-          <form onSubmit={saveTemplate} className="flex gap-2 p-2 bg-indigo-50 rounded-lg animate-in slide-in-from-top-2">
+          <form onSubmit={saveTemplate} className="flex gap-2 p-2 bg-indigo-50 dark:bg-indigo-500/15 rounded-lg animate-in slide-in-from-top-2">
             <input
               autoFocus
               type="text"
               placeholder={t('publisher.templateNamePlaceholder')}
-              className="flex-1 px-2 py-1 text-xs border border-indigo-200 rounded focus:ring-1 focus:ring-indigo-500"
+              className="flex-1 px-2 py-1 text-xs border border-indigo-200 dark:border-indigo-500/30 rounded focus:ring-1 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
               value={newTemplateName}
               onChange={(e) => setNewTemplateName(e.target.value)}
             />
@@ -168,7 +168,7 @@ const Publisher: React.FC<PublisherProps> = ({
               <div
                 key={t.id}
                 onClick={() => loadTemplate(t)}
-                className="flex-shrink-0 flex items-center gap-2 px-3 py-1 bg-zinc-100 hover:bg-zinc-200 rounded-full text-xs text-zinc-700 cursor-pointer border border-zinc-200 group transition-all"
+                className="flex-shrink-0 flex items-center gap-2 px-3 py-1 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full text-xs text-zinc-700 dark:text-zinc-300 cursor-pointer border border-zinc-200 dark:border-zinc-700 group transition-all"
                 title={t.payload}
               >
                 <i className="fas fa-bookmark text-indigo-300 text-[10px]"></i>
@@ -194,7 +194,7 @@ const Publisher: React.FC<PublisherProps> = ({
                 setTopic(e.target.value);
                 setShowHistoryDropdown(true);
               }}
-              className="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 font-mono text-zinc-700 bg-white"
+              className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 font-mono text-zinc-700 dark:text-zinc-100 bg-white dark:bg-zinc-800"
               placeholder={t('publisher.topicPlaceholder')}
               autoComplete="off"
             />
@@ -214,9 +214,9 @@ const Publisher: React.FC<PublisherProps> = ({
           {showHistoryDropdown && filteredHistory.length > 0 && (
             <div
               ref={dropdownRef}
-              className="absolute top-full left-0 right-0 mt-1 bg-white border border-zinc-200 rounded-lg shadow-xl max-h-60 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-1"
+              className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-xl dark:shadow-black/50 max-h-60 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-1"
             >
-              <div className="px-3 py-1.5 bg-zinc-50 border-b border-zinc-100 text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex justify-between">
+              <div className="px-3 py-1.5 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800 text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex justify-between">
                 <span>{t('publisher.recentTopics')}</span>
                 <span>{t('publisher.restoresPayload')}</span>
               </div>
@@ -224,10 +224,10 @@ const Publisher: React.FC<PublisherProps> = ({
                 <div
                   key={item.topic}
                   onClick={() => selectHistoryItem(item)}
-                  className="px-3 py-2 hover:bg-indigo-50 cursor-pointer border-b border-zinc-50 last:border-0 group transition-colors"
+                  className="px-3 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-500/15 cursor-pointer border-b border-zinc-50 dark:border-zinc-800 last:border-0 group transition-colors"
                 >
                   <div className="flex justify-between items-center mb-0.5">
-                    <span className="font-mono text-xs font-bold text-zinc-700 truncate">{item.topic}</span>
+                    <span className="font-mono text-xs font-bold text-zinc-700 dark:text-zinc-200 truncate">{item.topic}</span>
                     <button
                       onClick={(e) => deleteHistoryItem(e, item.topic)}
                       className="text-zinc-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
@@ -240,7 +240,7 @@ const Publisher: React.FC<PublisherProps> = ({
                       {item.payload.substring(0, 50)}
                       {item.payload.length > 50 ? '...' : ''}
                     </span>
-                    <span className="bg-zinc-100 px-1 rounded text-zinc-500">
+                    <span className="bg-zinc-100 dark:bg-zinc-800 px-1 rounded text-zinc-500 dark:text-zinc-400">
                       Q{item.qos} {item.retain ? 'R' : ''}
                     </span>
                   </div>
@@ -256,7 +256,7 @@ const Publisher: React.FC<PublisherProps> = ({
             <button
               onClick={handleAiGenerate}
               disabled={isGenerating || !isConnected}
-              className="text-[10px] flex items-center gap-1 text-indigo-600 hover:text-indigo-800 disabled:opacity-50 transition-colors font-medium bg-indigo-50 px-2 py-0.5 rounded-full"
+              className="text-[10px] flex items-center gap-1 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 disabled:opacity-50 transition-colors font-medium bg-indigo-50 dark:bg-indigo-500/15 px-2 py-0.5 rounded-full"
             >
               {isGenerating ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-magic"></i>}
               {t('publisher.aiGenerate')}
@@ -265,7 +265,7 @@ const Publisher: React.FC<PublisherProps> = ({
           <textarea
             value={payload}
             onChange={(e) => setPayload(e.target.value)}
-            className="w-full flex-1 px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 font-mono resize-none leading-relaxed"
+            className="w-full flex-1 px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 font-mono resize-none leading-relaxed bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
             placeholder={t('publisher.payloadPlaceholder')}
           />
         </div>
@@ -276,7 +276,7 @@ const Publisher: React.FC<PublisherProps> = ({
             <select
               value={qos}
               onChange={(e) => setQos(Number(e.target.value) as 0 | 1 | 2)}
-              className="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-indigo-500"
             >
               <option value="0">{t('publisher.qosLabels.q0')}</option>
               <option value="1">{t('publisher.qosLabels.q1')}</option>
@@ -291,7 +291,7 @@ const Publisher: React.FC<PublisherProps> = ({
                 onChange={(e) => setRetain(e.target.checked)}
                 className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
               />
-              <span className="text-sm text-zinc-700 font-medium">{t('publisher.retain')}</span>
+              <span className="text-sm text-zinc-700 dark:text-zinc-300 font-medium">{t('publisher.retain')}</span>
             </label>
           </div>
         </div>
@@ -299,7 +299,7 @@ const Publisher: React.FC<PublisherProps> = ({
         <button
           onClick={handlePublish}
           disabled={!isConnected}
-          className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-zinc-300 disabled:cursor-not-allowed text-white rounded-lg font-bold shadow-md transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+          className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-zinc-300 dark:disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-lg font-bold shadow-md transition-all active:scale-[0.98] flex items-center justify-center gap-2"
         >
           <i className="fas fa-paper-plane"></i> {t('publisher.publishMessage')}
         </button>

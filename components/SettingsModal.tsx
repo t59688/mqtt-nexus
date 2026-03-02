@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { BrokerConfig, AuthIdentity, AiConfig, AiPromptsConfig } from '../types';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n';
 import { DEFAULT_AI_PROMPTS, DEFAULT_BROKER, DEFAULT_IDENTITY } from '../constants';
+import foxEmblemLight from '../assets/fox-emblem-light.svg';
 import foxEmblem from '../assets/fox-emblem.svg';
 import { openExternalUrl } from '../services/externalLink';
 
@@ -289,8 +290,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col h-[80vh]">
-        <div className="flex items-center justify-between border-b border-zinc-200 bg-zinc-50 px-6 pt-4 pb-0">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl dark:shadow-black/50 w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col h-[80vh] border border-transparent dark:border-zinc-700">
+        <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 px-6 pt-4 pb-0">
           <div className="flex gap-6 flex-wrap">
             <button
               onClick={() => setActiveTab('general')}
@@ -323,29 +324,29 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               <i className="fas fa-id-card mr-2"></i> {t('settingsModal.tabIdentities')}
             </button>
           </div>
-          <button onClick={onClose} className="mb-4 text-zinc-400 hover:text-zinc-600">
+          <button onClick={onClose} className="mb-4 text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300">
             <i className="fas fa-times text-xl"></i>
           </button>
         </div>
 
-        <div className="flex-1 overflow-hidden bg-white relative">
+        <div className="flex-1 overflow-hidden bg-white dark:bg-zinc-900 relative">
           {activeTab === 'general' && (
             <div className="h-full p-6 overflow-y-auto custom-scrollbar">
               <div className="max-w-3xl mx-auto space-y-6">
-                <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-5">
-                  <h3 className="text-lg font-bold text-zinc-800 mb-1">{t('settingsModal.generalTitle')}</h3>
-                  <p className="text-xs text-zinc-500">{t('settingsModal.generalDescription')}</p>
+                <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-5">
+                  <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-50 mb-1">{t('settingsModal.generalTitle')}</h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">{t('settingsModal.generalDescription')}</p>
                 </div>
 
-                <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
-                  <h4 className="text-sm font-bold text-zinc-700 uppercase tracking-wider mb-4">{t('settingsModal.interfaceSection')}</h4>
+                <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-5 shadow-sm dark:shadow-black/20">
+                  <h4 className="text-sm font-bold text-zinc-700 dark:text-zinc-50 uppercase tracking-wider mb-4">{t('settingsModal.interfaceSection')}</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">{t('common.language')}</label>
+                      <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1 block">{t('common.language')}</label>
                       <select
                         value={language}
                         onChange={(event) => onLanguageChange(event.target.value as SupportedLanguage)}
-                        className="w-full border border-zinc-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-indigo-500"
+                        className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:ring-2 focus:ring-indigo-500"
                       >
                         {SUPPORTED_LANGUAGES.map((lang) => (
                           <option key={lang} value={lang}>
@@ -355,11 +356,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">{t('common.theme')}</label>
+                      <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1 block">{t('common.theme')}</label>
                       <select
                         value={theme}
                         onChange={(event) => onThemeChange(event.target.value as 'light' | 'dark')}
-                        className="w-full border border-zinc-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-indigo-500"
+                        className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:ring-2 focus:ring-indigo-500"
                       >
                         <option value="light">{t('app.themeOptions.light')}</option>
                         <option value="dark">{t('app.themeOptions.dark')}</option>
@@ -368,10 +369,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
-                  <h4 className="text-sm font-bold text-zinc-700 uppercase tracking-wider mb-4">{t('settingsModal.storageSection')}</h4>
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">{t('app.configFilePath')}</label>
-                  <div className="font-mono text-xs bg-zinc-100 border border-zinc-200 rounded-lg px-3 py-2 text-zinc-600 break-all">
+                <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-5 shadow-sm dark:shadow-black/20">
+                  <h4 className="text-sm font-bold text-zinc-700 dark:text-zinc-50 uppercase tracking-wider mb-4">{t('settingsModal.storageSection')}</h4>
+                  <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1 block">{t('app.configFilePath')}</label>
+                  <div className="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-600 dark:text-zinc-300 break-all">
                     {configFilePath || t('app.pathUnavailable')}
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -383,16 +384,16 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     </button>
                     <button
                       onClick={onCopyConfigPath}
-                      className="px-4 py-2 bg-zinc-200 text-zinc-700 rounded-lg text-sm font-semibold hover:bg-zinc-300 transition-colors"
+                      className="px-4 py-2 bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-lg text-sm font-semibold hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors"
                     >
                       <i className="fas fa-copy mr-2"></i>{t('common.copy')}
                     </button>
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
-                  <h4 className="text-sm font-bold text-zinc-700 uppercase tracking-wider mb-1">{t('settingsModal.backupSection')}</h4>
-                  <p className="text-xs text-zinc-500 mb-4">{t('settingsModal.backupDescription')}</p>
+                <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-5 shadow-sm dark:shadow-black/20">
+                  <h4 className="text-sm font-bold text-zinc-700 dark:text-zinc-50 uppercase tracking-wider mb-1">{t('settingsModal.backupSection')}</h4>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">{t('settingsModal.backupDescription')}</p>
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={onImportConfig}
@@ -402,36 +403,37 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     </button>
                     <button
                       onClick={onExportConfig}
-                      className="px-4 py-2 bg-zinc-200 text-zinc-700 rounded-lg text-sm font-semibold hover:bg-zinc-300 transition-colors"
+                      className="px-4 py-2 bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-lg text-sm font-semibold hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors"
                     >
                       <i className="fas fa-file-export mr-2"></i>{t('common.export')}
                     </button>
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
-                  <h4 className="text-sm font-bold text-zinc-700 uppercase tracking-wider mb-1">{t('settingsModal.aboutSection')}</h4>
-                  <p className="text-xs text-zinc-500 mb-4">{t('settingsModal.aboutDescription')}</p>
+                <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-5 shadow-sm dark:shadow-black/20">
+                  <h4 className="text-sm font-bold text-zinc-700 dark:text-zinc-50 uppercase tracking-wider mb-1">{t('settingsModal.aboutSection')}</h4>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">{t('settingsModal.aboutDescription')}</p>
                   <div className="space-y-4">
-                    <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+                    <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-4">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <div className="mx-auto flex h-20 w-20 shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-white p-3 sm:mx-0">
-                          <img src={foxEmblem} alt={t('settingsModal.aboutSection')} className="h-14 w-14 object-contain" />
+                        <div className="mx-auto flex h-20 w-20 shrink-0 items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3 sm:mx-0">
+                          <img src={foxEmblem} alt={t('settingsModal.aboutSection')} className="h-14 w-14 object-contain block dark:hidden" />
+                          <img src={foxEmblemLight} alt={t('settingsModal.aboutSection')} className="h-14 w-14 object-contain hidden dark:block" />
                         </div>
                         <div className="space-y-1">
-                          <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">{t('settingsModal.aboutSection')}</p>
-                          <p className="text-sm text-zinc-600 leading-relaxed">{t('app.aboutModal.tagline')}</p>
+                          <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{t('settingsModal.aboutSection')}</p>
+                          <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">{t('app.aboutModal.tagline')}</p>
                         </div>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 items-start gap-3 lg:grid-cols-3">
-                      <div className="h-fit rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+                      <div className="h-fit rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-4 shadow-sm dark:shadow-black/20">
                         <div className="mb-2 flex items-center gap-2">
                           <i className="fas fa-user text-xs text-zinc-400"></i>
-                          <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">{t('settingsModal.authorLabel')}</p>
+                          <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{t('settingsModal.authorLabel')}</p>
                         </div>
-                        <div className="text-sm font-semibold text-zinc-700 break-all">{authorName}</div>
+                        <div className="text-sm font-semibold text-zinc-700 dark:text-zinc-200 break-all">{authorName}</div>
                         <div className="mt-3 flex flex-wrap gap-2">
                           {authorUrl && (
                             <a
@@ -439,7 +441,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                               target="_blank"
                               rel="noopener noreferrer"
                               onClick={handleExternalLinkClick(authorUrl)}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-600 transition-colors hover:border-indigo-400 hover:text-indigo-600"
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300 transition-colors hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:text-indigo-600 dark:hover:text-indigo-400"
                             >
                               <span>{t('app.aboutModal.openAuthor')}</span>
                               <i className="fas fa-arrow-up-right-from-square text-[10px]"></i>
@@ -451,7 +453,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                               target="_blank"
                               rel="noopener noreferrer"
                               onClick={handleExternalLinkClick(authorHomeUrl)}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-600 transition-colors hover:border-indigo-400 hover:text-indigo-600"
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300 transition-colors hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:text-indigo-600 dark:hover:text-indigo-400"
                             >
                               <span>{t('app.aboutModal.openHome')}</span>
                               <i className="fas fa-arrow-up-right-from-square text-[10px]"></i>
@@ -460,15 +462,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                         </div>
                       </div>
 
-                      <div className="h-fit rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+                      <div className="h-fit rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-4 shadow-sm dark:shadow-black/20">
                         <div className="mb-2 flex items-center gap-2">
                           <i className="fab fa-weixin text-sm text-emerald-500"></i>
-                          <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">{t('settingsModal.wechatLabel')}</p>
+                          <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{t('settingsModal.wechatLabel')}</p>
                         </div>
-                        <div className="text-sm font-semibold text-zinc-700 break-all">{wechatName}</div>
+                        <div className="text-sm font-semibold text-zinc-700 dark:text-zinc-200 break-all">{wechatName}</div>
                         <div className="mt-3 flex justify-center">
-                          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-2">
-                            <div className="rounded-lg border border-zinc-200 bg-white p-1 shadow-sm">
+                          <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-2">
+                            <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-1 shadow-sm dark:shadow-black/20">
                               <img
                                 src={wechatQrCodeUrl}
                                 alt={`${wechatName} QR Code`}
@@ -481,22 +483,21 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                         </div>
                       </div>
 
-                      <div className="h-fit rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+                      <div className="h-fit rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-4 shadow-sm dark:shadow-black/20">
                         <div className="mb-2 flex items-center gap-2">
                           <i className="fab fa-github text-sm text-zinc-500"></i>
-                          <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">{t('settingsModal.openSourceLabel')}</p>
+                          <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{t('settingsModal.openSourceLabel')}</p>
                         </div>
-                        <div className="text-sm font-medium text-indigo-600 break-all">{shortOpenSource}</div>
+                        <div className="text-sm font-medium text-indigo-600 dark:text-indigo-400 break-all">{shortOpenSource}</div>
                         <div className="mt-3 flex flex-wrap gap-2">
                           <button
                             onClick={() => {
                               void copyText('repo', openSourceUrl);
                             }}
-                            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${
-                              copiedKey === 'repo'
-                                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                                : 'border-zinc-300 bg-white text-zinc-600 hover:border-indigo-400 hover:text-indigo-600'
-                            }`}
+                            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${copiedKey === 'repo'
+                              ? 'border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+                              : 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:text-indigo-600 dark:hover:text-indigo-400'
+                              }`}
                           >
                             {copiedKey === 'repo' ? t('app.aboutModal.copied') : t('app.aboutModal.copyRepo')}
                           </button>
@@ -505,7 +506,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={handleExternalLinkClick(openSourceUrl)}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-600 transition-colors hover:border-indigo-400 hover:text-indigo-600"
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300 transition-colors hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:text-indigo-600 dark:hover:text-indigo-400"
                           >
                             <span>{t('app.aboutModal.openRepo')}</span>
                             <i className="fas fa-arrow-up-right-from-square text-[10px]"></i>
@@ -522,16 +523,16 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           {activeTab === 'ai' && (
             <div className="h-full p-6 overflow-y-auto custom-scrollbar">
               <div className="max-w-3xl mx-auto space-y-6">
-                <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-5">
-                  <h3 className="text-lg font-bold text-zinc-800 mb-1">{t('settingsModal.aiTitle')}</h3>
-                  <p className="text-xs text-zinc-500">{t('settingsModal.aiDescription')}</p>
+                <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-5">
+                  <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-50 mb-1">{t('settingsModal.aiTitle')}</h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">{t('settingsModal.aiDescription')}</p>
                 </div>
 
-                <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
-                  <h4 className="text-sm font-bold text-zinc-700 uppercase tracking-wider mb-4">{t('settingsModal.aiConnectionSection')}</h4>
+                <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-5 shadow-sm dark:shadow-black/20">
+                  <h4 className="text-sm font-bold text-zinc-700 dark:text-zinc-50 uppercase tracking-wider mb-4">{t('settingsModal.aiConnectionSection')}</h4>
                   <div className="space-y-4">
                     <div>
-                      <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">
+                      <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1 block">
                         {t('settingsModal.aiBaseUrl')}
                       </label>
                       <input
@@ -544,11 +545,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                           })
                         }
                         placeholder={t('settingsModal.aiBaseUrlPlaceholder')}
-                        className="w-full border border-zinc-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-indigo-500"
+                        className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:ring-2 focus:ring-indigo-500"
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">
+                      <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1 block">
                         {t('settingsModal.aiApiKey')}
                       </label>
                       <input
@@ -561,11 +562,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                           })
                         }
                         placeholder={t('settingsModal.aiApiKeyPlaceholder')}
-                        className="w-full border border-zinc-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-indigo-500"
+                        className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:ring-2 focus:ring-indigo-500"
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">
+                      <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1 block">
                         {t('settingsModal.aiModel')}
                       </label>
                       <input
@@ -578,13 +579,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                           })
                         }
                         placeholder={t('settingsModal.aiModelPlaceholder')}
-                        className="w-full border border-zinc-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-indigo-500"
+                        className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:ring-2 focus:ring-indigo-500"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-700">
+                <div className="rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/15 p-4 text-xs text-amber-700 dark:text-amber-400">
                   <i className="fas fa-circle-info mr-2"></i>
                   {t('settingsModal.aiTip')}
                 </div>
@@ -595,31 +596,29 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           {activeTab === 'prompts' && (
             <div className="h-full p-6 overflow-y-auto custom-scrollbar">
               <div className="max-w-4xl mx-auto space-y-6">
-                <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-5">
-                  <h3 className="text-lg font-bold text-zinc-800 mb-1">{t('settingsModal.promptsTitle')}</h3>
-                  <p className="text-xs text-zinc-500">{t('settingsModal.promptsDescription')}</p>
+                <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-5">
+                  <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-50 mb-1">{t('settingsModal.promptsTitle')}</h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">{t('settingsModal.promptsDescription')}</p>
                 </div>
 
-                <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm space-y-3">
+                <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-4 shadow-sm dark:shadow-black/20 space-y-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="inline-flex rounded-lg border border-zinc-200 bg-zinc-50 p-1">
+                    <div className="inline-flex rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-1">
                       <button
                         onClick={() => setPromptEditorTab('payload')}
-                        className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-                          promptEditorTab === 'payload'
-                            ? 'bg-white text-indigo-700 shadow-sm border border-indigo-200'
-                            : 'text-zinc-500 hover:text-zinc-700'
-                        }`}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${promptEditorTab === 'payload'
+                          ? 'bg-white dark:bg-zinc-800 text-indigo-700 dark:text-indigo-400 shadow-sm border border-indigo-200 dark:border-indigo-500/30'
+                          : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300'
+                          }`}
                       >
                         {t('settingsModal.promptPayloadSection')}
                       </button>
                       <button
                         onClick={() => setPromptEditorTab('topicCatalog')}
-                        className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-                          promptEditorTab === 'topicCatalog'
-                            ? 'bg-white text-indigo-700 shadow-sm border border-indigo-200'
-                            : 'text-zinc-500 hover:text-zinc-700'
-                        }`}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${promptEditorTab === 'topicCatalog'
+                          ? 'bg-white dark:bg-zinc-800 text-indigo-700 dark:text-indigo-400 shadow-sm border border-indigo-200 dark:border-indigo-500/30'
+                          : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300'
+                          }`}
                       >
                         {t('settingsModal.promptTopicCatalogSection')}
                       </button>
@@ -635,14 +634,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                       />
                       <button
                         onClick={triggerPromptTemplateImport}
-                        className="px-3 py-1.5 rounded-lg border border-zinc-300 text-xs font-semibold text-zinc-600 hover:border-indigo-400 hover:text-indigo-600"
+                        className="px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:text-indigo-600 dark:hover:text-indigo-400"
                       >
                         <i className="fas fa-file-import mr-1"></i>
                         {t('settingsModal.promptTemplateImport')}
                       </button>
                       <button
                         onClick={handlePromptTemplateExport}
-                        className="px-3 py-1.5 rounded-lg border border-zinc-300 text-xs font-semibold text-zinc-600 hover:border-indigo-400 hover:text-indigo-600"
+                        className="px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:text-indigo-600 dark:hover:text-indigo-400"
                       >
                         <i className="fas fa-file-export mr-1"></i>
                         {t('settingsModal.promptTemplateExport')}
@@ -651,13 +650,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                   {promptToolNotice && (
                     <div
-                      className={`rounded-lg border px-3 py-2 text-xs ${
-                        promptToolNotice.tone === 'success'
-                          ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                          : promptToolNotice.tone === 'error'
-                            ? 'border-red-200 bg-red-50 text-red-700'
-                            : 'border-zinc-200 bg-zinc-50 text-zinc-600'
-                      }`}
+                      className={`rounded-lg border px-3 py-2 text-xs ${promptToolNotice.tone === 'success'
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                        : promptToolNotice.tone === 'error'
+                          ? 'border-red-200 bg-red-50 text-red-700'
+                          : 'border-zinc-200 bg-zinc-50 text-zinc-600'
+                        }`}
                     >
                       {promptToolNotice.message}
                     </div>
@@ -665,9 +663,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
 
                 {promptEditorTab === 'payload' && (
-                  <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm space-y-4">
+                  <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-5 shadow-sm dark:shadow-black/20 space-y-4">
                     <div className="flex items-center justify-between gap-2">
-                      <h4 className="text-sm font-bold text-zinc-700 uppercase tracking-wider">
+                      <h4 className="text-sm font-bold text-zinc-700 dark:text-zinc-50 uppercase tracking-wider">
                         {t('settingsModal.promptPayloadSection')}
                       </h4>
                       <button
@@ -679,14 +677,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                             payloadDescriptionFallback: DEFAULT_AI_PROMPTS.payloadDescriptionFallback,
                           })
                         }
-                        className="px-3 py-1.5 rounded-lg border border-zinc-300 text-xs font-semibold text-zinc-600 hover:border-indigo-400 hover:text-indigo-600"
+                        className="px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:text-indigo-600 dark:hover:text-indigo-400"
                       >
                         {t('settingsModal.promptResetDefaults')}
                       </button>
                     </div>
 
                     <div>
-                      <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">
+                      <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1 block">
                         {t('settingsModal.promptSystemLabel')}
                       </label>
                       <textarea
@@ -695,12 +693,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                           onAiPromptsChange({ ...aiPrompts, payloadSystemPrompt: event.target.value })
                         }
                         rows={3}
-                        className="w-full border border-zinc-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-3 py-2 text-xs font-medium border border-zinc-200 dark:border-zinc-700/80 rounded-lg focus:ring-1 focus:ring-indigo-500/50 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 transition-all shadow-sm dark:shadow-none"
                       />
                     </div>
 
                     <div>
-                      <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">
+                      <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1 block">
                         {t('settingsModal.promptUserTemplateLabel')}
                       </label>
                       <textarea
@@ -712,18 +710,19 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                           })
                         }
                         rows={6}
-                        className="w-full border border-zinc-300 rounded-lg px-3 py-2 bg-white text-sm font-mono focus:ring-2 focus:ring-indigo-500"
+                        spellCheck={false}
+                        className="w-full px-3 py-2 text-xs border border-zinc-200 dark:border-zinc-800 rounded-lg focus:ring-1 focus:ring-indigo-500/50 font-mono bg-zinc-50/50 dark:bg-zinc-950/40 text-zinc-800 dark:text-zinc-300 shadow-inner dark:shadow-none custom-scrollbar transition-all selection:bg-indigo-200 dark:selection:bg-indigo-500/30"
                       />
-                      <p className="mt-1 text-[11px] text-zinc-500">
+                      <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
                         {t('settingsModal.promptTemplateHintPayload')}
-                        <span className="ml-1 font-mono text-zinc-600">{'{{topic}}'}</span>
+                        <span className="ml-1 font-mono text-zinc-600 dark:text-zinc-300">{'{{topic}}'}</span>
                         <span className="mx-1 text-zinc-400">/</span>
-                        <span className="font-mono text-zinc-600">{'{{description}}'}</span>
+                        <span className="font-mono text-zinc-600 dark:text-zinc-300">{'{{description}}'}</span>
                       </p>
                     </div>
 
                     <div>
-                      <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">
+                      <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1 block">
                         {t('settingsModal.promptDescriptionFallbackLabel')}
                       </label>
                       <textarea
@@ -735,16 +734,16 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                           })
                         }
                         rows={3}
-                        className="w-full border border-zinc-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-3 py-2 text-xs font-medium border border-zinc-200 dark:border-zinc-700/80 rounded-lg focus:ring-1 focus:ring-indigo-500/50 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 transition-all shadow-sm dark:shadow-none"
                       />
                     </div>
                   </div>
                 )}
 
                 {promptEditorTab === 'topicCatalog' && (
-                  <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm space-y-4">
+                  <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-5 shadow-sm dark:shadow-black/20 space-y-4">
                     <div className="flex items-center justify-between gap-2">
-                      <h4 className="text-sm font-bold text-zinc-700 uppercase tracking-wider">
+                      <h4 className="text-sm font-bold text-zinc-700 dark:text-zinc-50 uppercase tracking-wider">
                         {t('settingsModal.promptTopicCatalogSection')}
                       </h4>
                       <button
@@ -756,14 +755,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                               DEFAULT_AI_PROMPTS.topicCatalogUserPromptTemplate,
                           })
                         }
-                        className="px-3 py-1.5 rounded-lg border border-zinc-300 text-xs font-semibold text-zinc-600 hover:border-indigo-400 hover:text-indigo-600"
+                        className="px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:text-indigo-600 dark:hover:text-indigo-400"
                       >
                         {t('settingsModal.promptResetDefaults')}
                       </button>
                     </div>
 
                     <div>
-                      <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">
+                      <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1 block">
                         {t('settingsModal.promptSystemLabel')}
                       </label>
                       <textarea
@@ -775,12 +774,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                           })
                         }
                         rows={3}
-                        className="w-full border border-zinc-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-3 py-2 text-xs font-medium border border-zinc-200 dark:border-zinc-700/80 rounded-lg focus:ring-1 focus:ring-indigo-500/50 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 transition-all shadow-sm dark:shadow-none"
                       />
                     </div>
 
                     <div>
-                      <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">
+                      <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1 block">
                         {t('settingsModal.promptUserTemplateLabel')}
                       </label>
                       <textarea
@@ -792,15 +791,16 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                           })
                         }
                         rows={12}
-                        className="w-full border border-zinc-300 rounded-lg px-3 py-2 bg-white text-sm font-mono focus:ring-2 focus:ring-indigo-500"
+                        spellCheck={false}
+                        className="w-full px-3 py-2 text-xs border border-zinc-200 dark:border-zinc-800 rounded-lg focus:ring-1 focus:ring-indigo-500/50 font-mono bg-zinc-50/50 dark:bg-zinc-950/40 text-zinc-800 dark:text-zinc-300 shadow-inner dark:shadow-none custom-scrollbar transition-all selection:bg-indigo-200 dark:selection:bg-indigo-500/30"
                       />
-                      <p className="mt-1 text-[11px] text-zinc-500">
+                      <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
                         {t('settingsModal.promptTemplateHintCatalog')}
-                        <span className="ml-1 font-mono text-zinc-600">{'{{responseLanguage}}'}</span>
+                        <span className="ml-1 font-mono text-zinc-600 dark:text-zinc-300">{'{{responseLanguage}}'}</span>
                         <span className="mx-1 text-zinc-400">/</span>
-                        <span className="font-mono text-zinc-600">{'{{sourceName}}'}</span>
+                        <span className="font-mono text-zinc-600 dark:text-zinc-300">{'{{sourceName}}'}</span>
                         <span className="mx-1 text-zinc-400">/</span>
-                        <span className="font-mono text-zinc-600">{'{{sourceText}}'}</span>
+                        <span className="font-mono text-zinc-600 dark:text-zinc-300">{'{{sourceText}}'}</span>
                       </p>
                     </div>
                   </div>
@@ -815,56 +815,56 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div className="h-full flex flex-col">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h3 className="text-lg font-bold text-zinc-700">{t('settingsModal.managedBrokers')}</h3>
-                      <p className="text-xs text-zinc-500">{t('settingsModal.managedBrokersDesc')}</p>
+                      <h3 className="text-lg font-bold text-zinc-700 dark:text-zinc-100">{t('settingsModal.managedBrokers')}</h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">{t('settingsModal.managedBrokersDesc')}</p>
                     </div>
                     <button
                       onClick={() => {
                         setEditingBroker({ ...DEFAULT_BROKER, id: '' });
                         setIsEditingBroker(true);
                       }}
-                      className="px-4 py-2 bg-zinc-800 text-white rounded-lg text-sm hover:bg-zinc-700 shadow-lg shadow-zinc-200"
+                      className="px-4 py-2 bg-zinc-800 text-white rounded-lg text-sm hover:bg-zinc-700 shadow-lg shadow-zinc-200 dark:shadow-zinc-800/50"
                     >
                       <i className="fas fa-plus mr-2"></i> {t('settingsModal.newBroker')}
                     </button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {brokers.map((b) => (
-                      <div key={b.id} className="flex flex-col p-4 bg-zinc-50 border border-zinc-200 rounded-lg hover:border-indigo-300 transition-colors group">
+                      <div key={b.id} className="flex flex-col p-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:border-indigo-300 dark:hover:border-indigo-500/50 transition-colors group">
                         <div className="flex justify-between items-start mb-2">
-                          <div className="font-bold text-zinc-800 flex items-center gap-2">
+                          <div className="font-bold text-zinc-800 dark:text-zinc-100 flex items-center gap-2">
                             <i className="fas fa-network-wired text-zinc-400 text-xs"></i>
                             {b.name}
                           </div>
                           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => { setEditingBroker(b); setIsEditingBroker(true); }} className="p-1.5 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 rounded">
+                            <button onClick={() => { setEditingBroker(b); setIsEditingBroker(true); }} className="p-1.5 text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/15 rounded">
                               <i className="fas fa-edit"></i>
                             </button>
-                            <button onClick={() => onDeleteBroker(b.id)} className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded">
+                            <button onClick={() => onDeleteBroker(b.id)} className="p-1.5 text-zinc-400 hover:text-red-600 dark:hover:text-rose-400 hover:bg-red-50 dark:hover:bg-rose-500/15 rounded">
                               <i className="fas fa-trash"></i>
                             </button>
                           </div>
                         </div>
-                        <div className="text-xs text-zinc-500 font-mono bg-white p-2 rounded border border-zinc-100">
+                        <div className="text-xs text-zinc-500 dark:text-zinc-400 font-mono bg-white dark:bg-zinc-800 p-2 rounded border border-zinc-100 dark:border-zinc-700">
                           {b.protocol}://{b.host}:{b.port}{b.path || ''}
                         </div>
                       </div>
                     ))}
                   </div>
-                  {brokers.length === 0 && <div className="flex-1 flex items-center justify-center text-zinc-400 italic">{t('settingsModal.noBrokers')}</div>}
+                  {brokers.length === 0 && <div className="flex-1 flex items-center justify-center text-zinc-400 dark:text-zinc-500 italic">{t('settingsModal.noBrokers')}</div>}
                 </div>
               ) : (
                 <div className="max-w-xl mx-auto w-full py-4 animate-in slide-in-from-right-4">
-                  <h3 className="text-lg font-bold text-zinc-800 mb-6 flex items-center gap-2">
-                    <button onClick={() => setIsEditingBroker(false)} className="text-zinc-400 hover:text-zinc-600"><i className="fas fa-arrow-left"></i></button>
+                  <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6 flex items-center gap-2">
+                    <button onClick={() => setIsEditingBroker(false)} className="text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"><i className="fas fa-arrow-left"></i></button>
                     {editingBroker.id ? t('settingsModal.editBroker') : t('settingsModal.newBroker')}
                   </h3>
-                  <div className="space-y-4 bg-zinc-50 p-6 rounded-xl border border-zinc-200">
+                  <div className="space-y-4 bg-zinc-50 dark:bg-zinc-800/50 p-6 rounded-xl border border-zinc-200 dark:border-zinc-700">
                     <div>
-                      <label className="text-sm font-bold text-zinc-600 block mb-1">{t('settingsModal.displayName')}</label>
+                      <label className="text-sm font-bold text-zinc-600 dark:text-zinc-300 block mb-1">{t('settingsModal.displayName')}</label>
                       <input
                         type="text"
-                        className="w-full border border-zinc-300 p-2 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                        className="w-full border border-zinc-300 dark:border-zinc-700 p-2 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-indigo-500"
                         value={editingBroker.name}
                         onChange={(e) => setEditingBroker((b) => ({ ...b, name: e.target.value }))}
                         placeholder={t('settingsModal.placeholders.productionCluster')}
@@ -872,19 +872,19 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <div className="col-span-2">
-                        <label className="text-sm font-bold text-zinc-600 block mb-1">{t('settingsModal.hostAddress')}</label>
+                        <label className="text-sm font-bold text-zinc-600 dark:text-zinc-300 block mb-1">{t('settingsModal.hostAddress')}</label>
                         <input
                           type="text"
-                          className="w-full border border-zinc-300 p-2 rounded-lg"
+                          className="w-full border border-zinc-300 dark:border-zinc-700 p-2 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
                           value={editingBroker.host}
                           onChange={(e) => setEditingBroker((b) => ({ ...b, host: e.target.value }))}
                         />
                       </div>
                       <div>
-                        <label className="text-sm font-bold text-zinc-600 block mb-1">{t('settingsModal.port')}</label>
+                        <label className="text-sm font-bold text-zinc-600 dark:text-zinc-300 block mb-1">{t('settingsModal.port')}</label>
                         <input
                           type="number"
-                          className="w-full border border-zinc-300 p-2 rounded-lg"
+                          className="w-full border border-zinc-300 dark:border-zinc-700 p-2 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
                           value={editingBroker.port}
                           onChange={(e) => setEditingBroker((b) => ({ ...b, port: parseInt(e.target.value, 10) || 0 }))}
                         />
@@ -892,9 +892,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-sm font-bold text-zinc-600 block mb-1">{t('settingsModal.protocol')}</label>
+                        <label className="text-sm font-bold text-zinc-600 dark:text-zinc-300 block mb-1">{t('settingsModal.protocol')}</label>
                         <select
-                          className="w-full border border-zinc-300 p-2 rounded-lg bg-white"
+                          className="w-full border border-zinc-300 dark:border-zinc-700 p-2 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 bg-white"
                           value={editingBroker.protocol}
                           onChange={(e) => {
                             const protocol = e.target.value as BrokerConfig['protocol'];
@@ -915,10 +915,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                         </select>
                       </div>
                       <div>
-                        <label className="text-sm font-bold text-zinc-600 block mb-1">{t('settingsModal.mountPath')}</label>
+                        <label className="text-sm font-bold text-zinc-600 dark:text-zinc-300 block mb-1">{t('settingsModal.mountPath')}</label>
                         <input
                           type="text"
-                          className="w-full border border-zinc-300 p-2 rounded-lg"
+                          className="w-full border border-zinc-300 dark:border-zinc-700 p-2 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
                           value={editingBroker.path || ''}
                           onChange={(e) => setEditingBroker((b) => ({ ...b, path: e.target.value }))}
                           disabled={!isWsProtocol}
@@ -926,8 +926,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                         />
                       </div>
                     </div>
-                    <div className="pt-4 flex justify-end gap-2 border-t border-zinc-200 mt-4">
-                      <button onClick={() => setIsEditingBroker(false)} className="px-4 py-2 text-zinc-500 hover:bg-zinc-200 rounded-lg">{t('common.cancel')}</button>
+                    <div className="pt-4 flex justify-end gap-2 border-t border-zinc-200 dark:border-zinc-700 mt-4">
+                      <button onClick={() => setIsEditingBroker(false)} className="px-4 py-2 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg">{t('common.cancel')}</button>
                       <button onClick={handleBrokerSave} className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-md">{t('settingsModal.saveBroker')}</button>
                     </div>
                   </div>
@@ -942,51 +942,51 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div className="h-full flex flex-col">
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h3 className="text-lg font-bold text-zinc-700">{t('settingsModal.managedIdentities')}</h3>
-                      <p className="text-xs text-zinc-500">{t('settingsModal.managedIdentitiesDesc')}</p>
+                      <h3 className="text-lg font-bold text-zinc-700 dark:text-zinc-100">{t('settingsModal.managedIdentities')}</h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">{t('settingsModal.managedIdentitiesDesc')}</p>
                     </div>
-                    <button onClick={() => { setEditingIdentity({ ...DEFAULT_IDENTITY, id: '' }); setIsEditingIdentity(true); }} className="px-4 py-2 bg-zinc-800 text-white rounded-lg text-sm hover:bg-zinc-700 shadow-lg shadow-zinc-200"><i className="fas fa-plus mr-2"></i> {t('settingsModal.newIdentity')}</button>
+                    <button onClick={() => { setEditingIdentity({ ...DEFAULT_IDENTITY, id: '' }); setIsEditingIdentity(true); }} className="px-4 py-2 bg-zinc-800 text-white rounded-lg text-sm hover:bg-zinc-700 shadow-lg shadow-zinc-200 dark:shadow-zinc-800/50"><i className="fas fa-plus mr-2"></i> {t('settingsModal.newIdentity')}</button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {identities.map((i) => (
-                      <div key={i.id} className="flex flex-col p-4 bg-zinc-50 border border-zinc-200 rounded-lg hover:border-indigo-300 transition-colors group">
+                      <div key={i.id} className="flex flex-col p-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:border-indigo-300 dark:hover:border-indigo-500/50 transition-colors group">
                         <div className="flex justify-between items-start mb-2">
-                          <div className="font-bold text-zinc-800 flex items-center gap-2">
+                          <div className="font-bold text-zinc-800 dark:text-zinc-100 flex items-center gap-2">
                             <i className="fas fa-user-shield text-zinc-400 text-xs"></i>
                             {i.name}
                           </div>
                           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => { setEditingIdentity(i); setIsEditingIdentity(true); }} className="p-1.5 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 rounded"><i className="fas fa-edit"></i></button>
-                            <button onClick={() => onDeleteIdentity(i.id)} className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded"><i className="fas fa-trash"></i></button>
+                            <button onClick={() => { setEditingIdentity(i); setIsEditingIdentity(true); }} className="p-1.5 text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/15 rounded"><i className="fas fa-edit"></i></button>
+                            <button onClick={() => onDeleteIdentity(i.id)} className="p-1.5 text-zinc-400 hover:text-red-600 dark:hover:text-rose-400 hover:bg-red-50 dark:hover:bg-rose-500/15 rounded"><i className="fas fa-trash"></i></button>
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <div className="text-xs text-zinc-500 flex justify-between bg-white p-1.5 rounded border border-zinc-100">
+                          <div className="text-xs text-zinc-500 dark:text-zinc-400 flex justify-between bg-white dark:bg-zinc-800 p-1.5 rounded border border-zinc-100 dark:border-zinc-700">
                             <span className="font-bold">{t('common.user')}:</span> <span className="font-mono">{i.username || t('settingsModal.placeholders.none')}</span>
                           </div>
-                          <div className="text-xs text-zinc-500 flex justify-between bg-white p-1.5 rounded border border-zinc-100">
+                          <div className="text-xs text-zinc-500 dark:text-zinc-400 flex justify-between bg-white dark:bg-zinc-800 p-1.5 rounded border border-zinc-100 dark:border-zinc-700">
                             <span className="font-bold">{t('common.clientId')}:</span> <span className="font-mono">{i.clientId || t('settingsModal.placeholders.auto')}</span>
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
-                  {identities.length === 0 && <div className="flex-1 flex items-center justify-center text-zinc-400 italic">{t('settingsModal.noIdentities')}</div>}
+                  {identities.length === 0 && <div className="flex-1 flex items-center justify-center text-zinc-400 dark:text-zinc-500 italic">{t('settingsModal.noIdentities')}</div>}
                 </div>
               ) : (
                 <div className="max-w-xl mx-auto w-full py-4 animate-in slide-in-from-right-4">
-                  <h3 className="text-lg font-bold text-zinc-800 mb-6 flex items-center gap-2">
-                    <button onClick={() => setIsEditingIdentity(false)} className="text-zinc-400 hover:text-zinc-600"><i className="fas fa-arrow-left"></i></button>
+                  <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-6 flex items-center gap-2">
+                    <button onClick={() => setIsEditingIdentity(false)} className="text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"><i className="fas fa-arrow-left"></i></button>
                     {editingIdentity.id ? t('settingsModal.editIdentity') : t('settingsModal.newIdentity')}
                   </h3>
-                  <div className="space-y-4 bg-zinc-50 p-6 rounded-xl border border-zinc-200">
-                    <div><label className="text-sm font-bold text-zinc-600 block mb-1">{t('settingsModal.identityName')}</label><input type="text" className="w-full border border-zinc-300 p-2 rounded-lg" value={editingIdentity.name} onChange={(e) => setEditingIdentity((i) => ({ ...i, name: e.target.value }))} placeholder={t('settingsModal.placeholders.adminUser')} /></div>
-                    <div><label className="text-sm font-bold text-zinc-600 block mb-1">{t('settingsModal.username')}</label><input type="text" className="w-full border border-zinc-300 p-2 rounded-lg" value={editingIdentity.username || ''} onChange={(e) => setEditingIdentity((i) => ({ ...i, username: e.target.value }))} /></div>
-                    <div><label className="text-sm font-bold text-zinc-600 block mb-1">{t('settingsModal.password')}</label><input type="text" className="w-full border border-zinc-300 p-2 rounded-lg" value={editingIdentity.password || ''} onChange={(e) => setEditingIdentity((i) => ({ ...i, password: e.target.value }))} /></div>
-                    <div><label className="text-sm font-bold text-zinc-600 block mb-1">{t('settingsModal.staticClientId')}</label><input type="text" className="w-full border border-zinc-300 p-2 rounded-lg font-mono text-sm" value={editingIdentity.clientId || ''} onChange={(e) => setEditingIdentity((i) => ({ ...i, clientId: e.target.value }))} placeholder={t('settingsModal.placeholders.staticClientId')} /></div>
+                  <div className="space-y-4 bg-zinc-50 dark:bg-zinc-800/50 p-6 rounded-xl border border-zinc-200 dark:border-zinc-700">
+                    <div><label className="text-sm font-bold text-zinc-600 dark:text-zinc-300 block mb-1">{t('settingsModal.identityName')}</label><input type="text" className="w-full border border-zinc-300 dark:border-zinc-700 p-2 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100" value={editingIdentity.name} onChange={(e) => setEditingIdentity((i) => ({ ...i, name: e.target.value }))} placeholder={t('settingsModal.placeholders.adminUser')} /></div>
+                    <div><label className="text-sm font-bold text-zinc-600 dark:text-zinc-300 block mb-1">{t('settingsModal.username')}</label><input type="text" className="w-full border border-zinc-300 dark:border-zinc-700 p-2 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100" value={editingIdentity.username || ''} onChange={(e) => setEditingIdentity((i) => ({ ...i, username: e.target.value }))} /></div>
+                    <div><label className="text-sm font-bold text-zinc-600 dark:text-zinc-300 block mb-1">{t('settingsModal.password')}</label><input type="text" className="w-full border border-zinc-300 dark:border-zinc-700 p-2 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100" value={editingIdentity.password || ''} onChange={(e) => setEditingIdentity((i) => ({ ...i, password: e.target.value }))} /></div>
+                    <div><label className="text-sm font-bold text-zinc-600 dark:text-zinc-300 block mb-1">{t('settingsModal.staticClientId')}</label><input type="text" className="w-full border border-zinc-300 dark:border-zinc-700 p-2 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-mono text-sm" value={editingIdentity.clientId || ''} onChange={(e) => setEditingIdentity((i) => ({ ...i, clientId: e.target.value }))} placeholder={t('settingsModal.placeholders.staticClientId')} /></div>
 
-                    <div className="pt-4 flex justify-end gap-2 border-t border-zinc-200 mt-4">
-                      <button onClick={() => setIsEditingIdentity(false)} className="px-4 py-2 text-zinc-500 hover:bg-zinc-200 rounded-lg">{t('common.cancel')}</button>
+                    <div className="pt-4 flex justify-end gap-2 border-t border-zinc-200 dark:border-zinc-700 mt-4">
+                      <button onClick={() => setIsEditingIdentity(false)} className="px-4 py-2 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg">{t('common.cancel')}</button>
                       <button onClick={handleIdentitySave} className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-md">{t('settingsModal.saveIdentity')}</button>
                     </div>
                   </div>

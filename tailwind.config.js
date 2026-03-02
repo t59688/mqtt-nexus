@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     './index.html',
     './*.{tsx,ts,jsx,js}',
@@ -34,6 +35,37 @@ export default {
           900: '#18181B',
           950: '#09090B',
         },
+        /* Origami Fox: Rose 替代 Red 作为错误色 */
+        rose: {
+          50: '#FFF1F2',
+          100: '#FFE4E6',
+          200: '#FECDD3',
+          300: '#FDA4AF',
+          400: '#FB7185',
+          500: '#F43F5E',
+          600: '#E11D48',
+          700: '#BE123C',
+          800: '#9F1239',
+          900: '#881337',
+          950: '#4C0519',
+        },
+      },
+      borderRadius: {
+        /* Origami Fox: 将 lg/xl/2xl/3xl 全部映射为 4px */
+        sm: '4px',
+        DEFAULT: '4px',
+        md: '4px',
+        lg: '4px',
+        xl: '4px',
+        '2xl': '4px',
+        '3xl': '4px',
+      },
+      transitionTimingFunction: {
+        'fox': 'cubic-bezier(0.16, 1, 0.3, 1)',
+      },
+      transitionDuration: {
+        'fast': '150ms',
+        'medium': '250ms',
       },
     },
   },

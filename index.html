@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -29,7 +29,11 @@
           console.warn('Failed to read startup preferences', error);
         }
 
-        document.documentElement.setAttribute('data-theme', theme);
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
         document.documentElement.setAttribute('lang', language === 'zh' ? 'zh-CN' : 'en');
       })();
     </script>
@@ -47,7 +51,7 @@
         color: #18181B;
       }
 
-      html[data-theme='dark'] body {
+      .dark body {
         background: #09090B;
         color: #fafafa;
       }
@@ -62,7 +66,7 @@
         background: #FAFAFA;
       }
 
-      html[data-theme='dark'] .startup-splash {
+      .dark .startup-splash {
         background: #09090B;
       }
 
@@ -75,7 +79,7 @@
         padding: 24px 22px 20px;
       }
 
-      html[data-theme='dark'] .startup-card {
+      .dark .startup-card {
         border-color: #3F3F46;
         background: #18181B;
         box-shadow: 0 20px 56px rgba(0, 0, 0, 0.4);
@@ -97,7 +101,7 @@
         overflow: hidden;
       }
 
-      html[data-theme='dark'] .startup-mark {
+      .dark .startup-mark {
         background: #27272A;
         border-color: #52525B;
       }
@@ -118,7 +122,7 @@
         color: #18181B;
       }
 
-      html[data-theme='dark'] .startup-name {
+      .dark .startup-name {
         color: #fafafa;
       }
 
@@ -130,7 +134,7 @@
         background: #E4E4E7;
       }
 
-      html[data-theme='dark'] .startup-progress-track {
+      .dark .startup-progress-track {
         background: #3F3F46;
       }
 
@@ -169,15 +173,15 @@
         background: #A1A1AA;
       }
 
-      html[data-theme='dark'] ::-webkit-scrollbar-track {
+      .dark ::-webkit-scrollbar-track {
         background: #18181B;
       }
 
-      html[data-theme='dark'] ::-webkit-scrollbar-thumb {
+      .dark ::-webkit-scrollbar-thumb {
         background: #3F3F46;
       }
 
-      html[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+      .dark ::-webkit-scrollbar-thumb:hover {
         background: #52525B;
       }
     </style>

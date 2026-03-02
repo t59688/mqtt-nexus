@@ -1,0 +1,77 @@
+# NexusMQTT Project Context
+
+## 1. Project Overview (项目概览)
+NexusMQTT 是一款现代化的跨平台桌面端 MQTT 客户端应用。
+核心业务功能：
+- **多协议支持**：MQTT, MQTTS, WS, WSS
+- **复杂连接管理**：配置连接 Profile，支持 Broker 和认证 Identity 的组合与管理
+- **核心通讯**：完善的消息发布与订阅 (Publish/Subscribe)，支持 QoS、Retain
+- **高级特性**：Topic 目录编目 (Topic Catalog)、消息历史记录查询与导出
+- **AI 智能集成**：结合 `rig-core` 等框架，提供 payload 生成与 Topic 使用引导的智能辅助
+
+## 2. Tech Stack (技术栈)
+项目采用目前最新的 Tauri 2.0 构建前后端分离桌面应用。
+
+### Frontend (前端展示层)
+- **核心框架:** React 19 + TypeScript (v5.8)
+- **构建工具:** Vite 6
+- **样式与 UI:** 面向实用类的 TailwindCSS 3.4
+- **国际化 (i18n):** i18next & react-i18next
+- **图标:** FontAwesome 6
+- **代码结构:** 类型收敛于根目录 `types.ts`，主入口为 `App.tsx` 和 `index.tsx`。
+
+### Backend / Desktop Runtime (后端与系统层)
+- **底层框架:** Tauri 2.0 (使用 Custom Protocol 特性)
+- **开发语言:** Rust 1.85 (Edition 2024)
+- **核心依赖:**
+  - `rumqttc` (含 websocket 扩展): 用于底层 MQTT 协议通讯
+  - `tokio`: 异步运行时底层支撑
+  - `rusqlite` (bundled): 用于本地嵌入式数据库存储（如历史记录、配置）
+  - `rig-core`: 接入 AI 相关能力的底层库
+  - `serde` / `serde_json`: 序列化及反序列化工具
+  - `dashmap` (并发安全映射), `rfd` (原生文件对话框)
+  - `anyhow`, `thiserror`: 标准化错误处理
+
+## 3. Architecture & Conventions (架构与开发约定)
+1. **进程通信:** 前端 (React) 与系统层 (Rust) 之间通过 Tauri IPC / Commands 进行严格的数据交换。
+2. **状态管理:** React 层负责 UI 状态维护与渲染，Rust 层处理网络连接实体、本地 DB 存储和系统级交互。
+3. **极简约束:** 开发遵循奥卡姆剃刀原则与第一性原理，不引入过度设计；优先重用 `types.ts` 和现有的接口抽象。
+4. **语言要求:** 所有的开发产物、分析结论、注释和提交记录，请**统一使用中文**进行输出。
+
+## 4. AI Assistant Instructions (针对 AI 的特别指令)
+- 已知本文件后，**禁止**再重复读取分析 `package.json`、`vite.config.ts` 或 `Cargo.toml` 来确认技术栈。
+- 编写前端组件时，请熟练应用 **React hooks**、**TailwindCSS** 以及 **Tauri 2 APIs**。
+- 编写 Rust 逻辑时，需遵守安全性、所有权模型，并正确处理并发 (Tokio) 与错误 (Anyhow/Thiserror)。
+- 修改范围严格限定在必要范围内，保持工程的稳定性与可读性。
+
+## 5. Feature to Code Mapping (核心功能代码映射)
+为了帮助你快速定位代码，以下是当前主要功能对应的文件及大致代码行数（Lines of Code），请在修改对应功能时优先查阅以下文件：
+
+### 5.1 前端应用层 (Frontend App & Definitions)
+- `App.tsx` (~2258 行) - 全局状态管理、主 UI 框架渲染与核心交互逻辑整合
+- `types.ts` (~146 行) - 全局 TypeScript 类型收敛（如 `ConnectionProfile`, `Message`, `TopicCatalogItem` 等）
+- `constants.ts` (~102 行) - 默认配置与常量定义
+
+### 5.2 前端功能组件 (Frontend Components)
+- `components/TopicWorkbench.tsx` (~1256 行) - **[Topic 工作台与 AI]** Topic 的编目管理、搜索、以及集成 AI 生成 Payload 的核心 UI
+- `components/SettingsModal.tsx` (~948 行) - **[全局设置]** 用户偏好、AI 参数配置、连接默认项配置
+- `components/ConnectionModal.tsx` (~370 行) - **[连接管理]** 创建/编辑 MQTT Broker、身份验证组合和独立连接配置
+- `components/Publisher.tsx` (~283 行) - **[消息发布]** 消息 Payload 编辑发送、QoS/Retain 设置与发送历史记录
+- `components/HistoryExportModal.tsx` (~239 行) - **[历史管理]** 消息历史的过滤、预览和文件导出
+- `components/MessageLog.tsx` (~212 行) - **[消息日志]** 实时接收和发送日志的展示过滤终端
+- `components/AboutModal.tsx` (~210 行) - **[系统说明]** 关于本软件版本信息和版权声明
+- `components/SubscriptionManager.tsx` (~98 行) - **[订阅管理]** 新增 Topic 订阅与颜色标识控制
+- `components/ConnectionItem.tsx` (~82 行) - **[连接项展示]** 侧边栏的连接项 UI 渲染
+
+### 5.3 后端核心层 (Tauri Rust Backend)
+- `src-tauri/src/history.rs` (~554 行) - **[历史记录 DB]** 基于 SQLite 的本地历史消息持久化模块
+- `src-tauri/src/mqtt/session.rs` (~424 行) - **[MQTT 核心通讯]** 封装 `rumqttc` 的单个 MQTT 客户端连接会话处理
+- `src-tauri/src/commands.rs` (~368 行) - **[前端 API]** Tauri 向前端暴露的全部 IPC Commands 入口层
+- `src-tauri/src/models.rs` (~212 行) - **[数据类型]** 前后端跨语言通讯使用的 Rust 数据结构定义与 serde 解析
+- `src-tauri/src/ai/payload.rs` (~153 行) - **[AI 服务]** 通过 `rig-core` 接入 LLM 接口实现 Payload 等智能生成的业务层
+- `src-tauri/src/config_store.rs` (~90 行) - **[连接配置 DB]** 本地连接配置文件管理的轻量操作封装
+- `src-tauri/src/lib.rs` (~77 行) - **[系统初始化]** 组装 Tauri Builder 和各组件的声明周期钩子
+- `src-tauri/src/mqtt/manager.rs` (~65 行) - **[连接池代理]** 多终端并发 MQTT 会话集合的管理
+- `src-tauri/src/ai/mod.rs` (~32 行) - **[AI 模块]** AI 模块对外导出与组织
+- `src-tauri/src/state.rs` (~21 行) - **[运行时状态]** 后端驻留内存系统级状态存放容器
+

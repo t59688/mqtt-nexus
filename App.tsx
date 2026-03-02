@@ -162,8 +162,8 @@ const normalizeTopicDocument = (value: unknown): ConnectionTopicDocument | null 
   const raw = value as Partial<ConnectionTopicDocument>;
   const topics = Array.isArray(raw.topics)
     ? raw.topics
-        .map((item) => sanitizeTopicItem(item))
-        .filter((item): item is TopicCatalogItem => item !== null)
+      .map((item) => sanitizeTopicItem(item))
+      .filter((item): item is TopicCatalogItem => item !== null)
     : [];
 
   return {
@@ -517,11 +517,11 @@ const resolveProfileProtocol = (
   return brokers.find((broker) => broker.id === profile.brokerId)?.protocol || profile.protocol;
 };
 
-const protocolBadgeStylesLight: Record<ConnectionProfile['protocol'], string> = {
-  mqtt: 'bg-sky-50 text-sky-700 border-sky-200',
-  mqtts: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  ws: 'bg-amber-50 text-amber-700 border-amber-200',
-  wss: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+const protocolBadgeStyles: Record<ConnectionProfile['protocol'], string> = {
+  mqtt: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/15 dark:text-sky-400 dark:border-sky-500/30',
+  mqtts: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-400 dark:border-emerald-500/30',
+  ws: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500/30',
+  wss: 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-500/15 dark:text-cyan-400 dark:border-cyan-500/30',
 };
 
 const appendMessages = (prev: Record<string, ConnectionState>, connectionId: string, newMessages: Message[]): Record<string, ConnectionState> => {
@@ -598,6 +598,7 @@ const App: React.FC = () => {
   const [connectionSearch, setConnectionSearch] = useState('');
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [theme, setTheme] = useState<ThemeMode>(() => getInitialTheme());
+  const themeGuardRef = useRef(false);
   const [publisherTemplates, setPublisherTemplates] = useState<PayloadTemplate[]>([]);
   const [connectionTopicDocs, setConnectionTopicDocs] = useState<Record<string, ConnectionTopicDocument>>({});
   const [isConfigLoaded, setIsConfigLoaded] = useState(false);
@@ -945,7 +946,11 @@ const App: React.FC = () => {
   }, [activeId, isConfigLoaded]);
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     try {
       window.localStorage.setItem(STORAGE_THEME_KEY, theme);
     } catch (error) {
@@ -1539,8 +1544,8 @@ const App: React.FC = () => {
         }
         const topics = Array.isArray(parsed.topics)
           ? parsed.topics
-              .map((item) => sanitizeTopicItem(item))
-              .filter((item): item is TopicCatalogItem => item !== null)
+            .map((item) => sanitizeTopicItem(item))
+            .filter((item): item is TopicCatalogItem => item !== null)
           : [];
 
         if (!Array.isArray(parsed.topics)) {
@@ -1620,7 +1625,7 @@ const App: React.FC = () => {
         if (!shouldContinue) return;
 
         Object.keys(connections).forEach((connectionId) => {
-          void invokeCommand<void>('mqtt_disconnect', { connectionId }).catch(() => {});
+          void invokeCommand<void>('mqtt_disconnect', { connectionId }).catch(() => { });
         });
 
         if (data.brokers && Array.isArray(data.brokers)) setBrokers(data.brokers);
@@ -1949,16 +1954,16 @@ const App: React.FC = () => {
     <div className="flex h-screen bg-zinc-100 font-sans text-zinc-900" onClick={() => setContextMenu(null)}>
       {contextMenu && (
         <div
-          className="fixed z-50 bg-white rounded-lg shadow-xl border border-zinc-200 py-1 min-w-[180px] animate-in fade-in zoom-in duration-100 origin-top-left"
+          className="fixed z-50 bg-white dark:bg-zinc-800 rounded-lg shadow-xl dark:shadow-black/50 border border-zinc-200 dark:border-zinc-700 py-1 min-w-[180px] animate-in fade-in zoom-in duration-100 origin-top-left"
           style={{ top: contextMenu.y, left: contextMenu.x }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="px-3 py-2 border-b border-zinc-100 mb-1">
-            <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">{connections[contextMenu.id]?.profile.name}</span>
+          <div className="px-3 py-2 border-b border-zinc-100 dark:border-zinc-700 mb-1">
+            <span className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">{connections[contextMenu.id]?.profile.name}</span>
           </div>
 
           <button
-            className="w-full text-left px-4 py-2 hover:bg-zinc-50 text-sm text-zinc-700 hover:text-indigo-600 flex items-center gap-2"
+            className="w-full text-left px-4 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-sm text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-2"
             onClick={() => {
               setQuickAction({ type: 'rename', id: contextMenu.id });
               setContextMenu(null);
@@ -1968,7 +1973,7 @@ const App: React.FC = () => {
           </button>
 
           <button
-            className="w-full text-left px-4 py-2 hover:bg-zinc-50 text-sm text-zinc-700 hover:text-indigo-600 flex items-center gap-2"
+            className="w-full text-left px-4 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-sm text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-2"
             onClick={() => {
               setQuickAction({ type: 'group', id: contextMenu.id });
               setContextMenu(null);
@@ -1977,10 +1982,10 @@ const App: React.FC = () => {
             <i className="fas fa-folder w-4 text-center"></i> {t('app.context.moveToGroup')}
           </button>
 
-          <div className="border-t border-zinc-100 my-1"></div>
+          <div className="border-t border-zinc-100 dark:border-zinc-700 my-1"></div>
 
           <button
-            className="w-full text-left px-4 py-2 hover:bg-zinc-50 text-sm text-zinc-700 hover:text-indigo-600 flex items-center gap-2"
+            className="w-full text-left px-4 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-sm text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-2"
             onClick={() => {
               cloneConnection(null, connections[contextMenu.id].profile);
               setContextMenu(null);
@@ -1990,7 +1995,7 @@ const App: React.FC = () => {
           </button>
 
           <button
-            className="w-full text-left px-4 py-2 hover:bg-zinc-50 text-sm text-zinc-700 hover:text-indigo-600 flex items-center gap-2"
+            className="w-full text-left px-4 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-sm text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-2"
             onClick={() => {
               setEditingProfile(connections[contextMenu.id].profile);
               setIsModalOpen(true);
@@ -2003,7 +2008,7 @@ const App: React.FC = () => {
           <div className="border-t border-zinc-100 my-1"></div>
 
           <button
-            className="w-full text-left px-4 py-2 hover:bg-red-50 text-sm text-red-600 flex items-center gap-2"
+            className="w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-rose-500/15 text-sm text-red-600 dark:text-rose-400 flex items-center gap-2"
             onClick={() => {
               void deleteConnection(null, contextMenu.id);
               setContextMenu(null);
@@ -2095,7 +2100,7 @@ const App: React.FC = () => {
       </div>
 
       <div
-        className="flex-1 flex flex-col overflow-hidden relative bg-zinc-50"
+        className="flex-1 flex flex-col overflow-hidden relative bg-zinc-50 dark:bg-zinc-950"
         onMouseDownCapture={() => {
           sidebarHotkeyScopeRef.current = false;
         }}
@@ -2105,22 +2110,22 @@ const App: React.FC = () => {
       >
         {activeConnection ? (
           <>
-            <header className="h-16 bg-white border-b border-zinc-200 flex items-center justify-between px-4 lg:px-5 shadow-sm z-10 flex-shrink-0">
+            <header className="h-16 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between px-4 lg:px-5 shadow-sm dark:shadow-black/30 z-10 flex-shrink-0">
               <div className="flex items-center gap-4 overflow-hidden">
                 {!sidebarOpen && (
-                  <button onClick={() => setSidebarOpen(true)} className="text-zinc-400 hover:text-indigo-600 transition-colors mr-2">
+                  <button onClick={() => setSidebarOpen(true)} className="text-zinc-400 dark:text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mr-2">
                     <i className="fas fa-bars text-lg"></i>
                   </button>
                 )}
                 <div className="flex flex-col">
-                  <h2 className="text-lg font-bold text-zinc-800 flex items-center gap-2 truncate">
+                  <h2 className="text-lg font-bold text-zinc-800 dark:text-zinc-50 flex items-center gap-2 truncate">
                     {activeConnection.profile.name}
-                    <span className={`text-[10px] px-2 py-0.5 rounded uppercase tracking-wide border ${protocolBadgeStylesLight[activeProtocol]}`}>
+                    <span className={`text-[10px] px-2 py-0.5 rounded uppercase tracking-wide border ${protocolBadgeStyles[activeProtocol]}`}>
                       {activeProtocol}
                     </span>
                     {activeConnection.profile.brokerId && <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 rounded uppercase tracking-wide border border-indigo-100">{t('app.linked')}</span>}
                   </h2>
-                  <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono">
+                  <div className="flex items-center gap-2 text-xs text-zinc-400 dark:text-zinc-500 font-mono">
                     <i className={`fas fa-circle text-[8px] ${activeConnection.status === 'connected' ? 'text-emerald-500' : 'text-zinc-300'}`}></i>
                     <span>
                       {activeConnection.profile.brokerId
@@ -2129,20 +2134,20 @@ const App: React.FC = () => {
                     </span>
                   </div>
                 </div>
-                <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border flex items-center gap-2 ${activeConnection.status === 'connected' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : activeConnection.status === 'error' ? 'bg-red-50 text-red-600 border-red-200' : activeConnection.status === 'connecting' ? 'bg-yellow-50 text-yellow-600 border-yellow-200' : 'bg-zinc-100 text-zinc-500 border-zinc-200'}`}>
-                  <span className={`w-2 h-2 rounded-full ${activeConnection.status === 'connected' ? 'bg-emerald-500' : activeConnection.status === 'error' ? 'bg-red-500' : activeConnection.status === 'connecting' ? 'bg-yellow-500 animate-pulse' : 'bg-zinc-400'}`}></span>
+                <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border flex items-center gap-2 ${activeConnection.status === 'connected' ? 'bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30' : activeConnection.status === 'error' ? 'bg-red-50 dark:bg-rose-500/15 text-red-600 dark:text-rose-400 border-red-200 dark:border-rose-500/30' : activeConnection.status === 'connecting' ? 'bg-yellow-50 dark:bg-amber-500/15 text-yellow-600 dark:text-amber-400 border-yellow-200 dark:border-amber-500/30' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700'}`}>
+                  <span className={`w-2 h-2 rounded-full ${activeConnection.status === 'connected' ? 'bg-emerald-500' : activeConnection.status === 'error' ? 'bg-rose-500' : activeConnection.status === 'connecting' ? 'bg-yellow-500 animate-pulse' : 'bg-zinc-400'}`}></span>
                   {t(`status.${activeConnection.status}`)}
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <button onClick={() => { if (activeConnection.status === 'connected') { void disconnect(activeConnection.profile.id); } else { void connect(activeConnection.profile.id); } }} className={`px-6 py-2 rounded-lg font-bold text-white transition-all shadow-md active:scale-95 min-w-[120px] text-sm flex items-center justify-center gap-2 ${activeConnection.status === 'connected' ? 'bg-red-500 hover:bg-red-600 shadow-red-200' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200'}`}>
+                <button onClick={() => { if (activeConnection.status === 'connected') { void disconnect(activeConnection.profile.id); } else { void connect(activeConnection.profile.id); } }} className={`px-6 py-2 rounded-lg font-bold text-white transition-all shadow-md active:scale-95 min-w-[120px] text-sm flex items-center justify-center gap-2 ${activeConnection.status === 'connected' ? 'bg-rose-500 hover:bg-rose-600 shadow-rose-200 dark:shadow-rose-500/20' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200 dark:shadow-emerald-500/20'}`}>
                   {activeConnection.status === 'connected' ? <><i className="fas fa-plug"></i> {t('common.disconnect')}</> : <><i className="fas fa-power-off"></i> {t('common.connect')}</>}
                 </button>
               </div>
             </header>
 
             {activeConnection.lastError && (
-              <div className="bg-red-50 text-red-700 px-4 lg:px-5 py-2 text-xs border-b border-red-100 flex items-center gap-2 animate-in slide-in-from-top-2">
+              <div className="bg-red-50 dark:bg-rose-500/15 text-red-700 dark:text-rose-400 px-4 lg:px-5 py-2 text-xs border-b border-red-100 dark:border-rose-500/30 flex items-center gap-2 animate-in slide-in-from-top-2">
                 <i className="fas fa-exclamation-circle"></i> <span className="font-semibold">{t('app.connectionError')}</span> {activeConnection.lastError}
               </div>
             )}
@@ -2193,15 +2198,15 @@ const App: React.FC = () => {
             </main>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-zinc-400 bg-zinc-50/50 relative">
+          <div className="flex-1 flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 bg-zinc-50/50 dark:bg-zinc-950 relative">
             {!sidebarOpen && (
-              <button onClick={() => setSidebarOpen(true)} className="absolute top-4 left-6 text-zinc-400 hover:text-indigo-600 transition-colors p-2">
+              <button onClick={() => setSidebarOpen(true)} className="absolute top-4 left-6 text-zinc-400 dark:text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors p-2">
                 <i className="fas fa-bars text-xl"></i>
               </button>
             )}
-            <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm border border-zinc-100"><i className="fas fa-network-wired text-4xl text-indigo-200"></i></div>
-            <h2 className="text-2xl font-bold text-zinc-700 mb-2">{t('app.welcomeTitle')}</h2>
-            <p className="max-w-md text-center text-zinc-500">
+            <div className="w-24 h-24 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-6 shadow-sm dark:shadow-black/30 border border-zinc-100 dark:border-zinc-800"><i className="fas fa-network-wired text-4xl text-indigo-200 dark:text-indigo-500/30"></i></div>
+            <h2 className="text-2xl font-bold text-zinc-700 dark:text-zinc-100 mb-2">{t('app.welcomeTitle')}</h2>
+            <p className="max-w-md text-center text-zinc-500 dark:text-zinc-400">
               {welcomeDescriptionLines.map((line, index) => (
                 <React.Fragment key={`${line}-${index}`}>
                   {line}
@@ -2209,10 +2214,10 @@ const App: React.FC = () => {
                 </React.Fragment>
               ))}
             </p>
-            <div className="text-sm text-zinc-400 mt-4 bg-zinc-100 px-4 py-2 rounded-lg font-mono">
+            <div className="text-sm text-zinc-400 dark:text-zinc-500 mt-4 bg-zinc-100 dark:bg-zinc-800 px-4 py-2 rounded-lg font-mono">
               <i className="fas fa-keyboard mr-2"></i> {t('app.tip')}
             </div>
-            <button onClick={() => { setEditingProfile(undefined); setIsModalOpen(true); }} className="mt-8 px-8 py-3 bg-white border border-indigo-200 text-indigo-600 hover:border-indigo-300 hover:shadow-lg hover:-translate-y-0.5 rounded-xl font-bold transition-all flex items-center gap-2"><i className="fas fa-plus text-indigo-500"></i> {t('app.createFirstConnection')}</button>
+            <button onClick={() => { setEditingProfile(undefined); setIsModalOpen(true); }} className="mt-8 px-8 py-3 bg-white dark:bg-zinc-900 border border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:border-indigo-300 hover:shadow-lg hover:-translate-y-0.5 rounded-xl font-bold transition-all flex items-center gap-2"><i className="fas fa-plus text-indigo-500 dark:text-indigo-400"></i> {t('app.createFirstConnection')}</button>
           </div>
         )}
 
@@ -2243,7 +2248,12 @@ const App: React.FC = () => {
               void i18n.changeLanguage(language);
             }
           }}
-          onThemeChange={(nextTheme) => setTheme(nextTheme)}
+          onThemeChange={(nextTheme) => {
+            if (themeGuardRef.current) return;
+            themeGuardRef.current = true;
+            setTheme(nextTheme);
+            queueMicrotask(() => { themeGuardRef.current = false; });
+          }}
           onOpenConfigDir={() => { void openConfigDirectory(); }}
           onCopyConfigPath={() => { void copyConfigPath(); }}
           onImportConfig={() => fileInputRef.current?.click()}
@@ -2299,11 +2309,11 @@ const App: React.FC = () => {
             onClick={() => setTopicAiDraft(null)}
           >
             <div
-              className="w-full max-w-4xl max-h-[88vh] overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-2xl flex flex-col"
+              className="w-full max-w-4xl max-h-[88vh] overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-2xl dark:shadow-black/50 flex flex-col"
               onClick={(event) => event.stopPropagation()}
             >
               <div className="px-5 py-4 border-b border-zinc-100">
-                <h3 className="text-base font-bold text-zinc-800">{t('topicWorkbench.aiImportPreviewTitle')}</h3>
+                <h3 className="text-base font-bold text-zinc-800 dark:text-zinc-50">{t('topicWorkbench.aiImportPreviewTitle')}</h3>
                 <p className="mt-1 text-sm text-zinc-500">
                   {t('topicWorkbench.aiImportPreviewDesc', {
                     name: topicAiDraft.connectionName,
@@ -2314,14 +2324,14 @@ const App: React.FC = () => {
               </div>
               <div className="px-5 py-4 space-y-3 overflow-y-auto">
                 {topicAiDraft.summary && (
-                  <div className="rounded-lg border border-indigo-100 bg-indigo-50/70 px-3 py-2 text-sm text-indigo-700">
+                  <div className="rounded-lg border border-indigo-100 dark:border-indigo-500/30 bg-indigo-50/70 dark:bg-indigo-500/15 px-3 py-2 text-sm text-indigo-700 dark:text-indigo-300">
                     {topicAiDraft.summary}
                   </div>
                 )}
-                <div className="rounded-lg border border-zinc-200 overflow-hidden">
+                <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
                   <div className="max-h-[52vh] overflow-auto">
                     <table className="w-full text-xs">
-                      <thead className="bg-zinc-50 text-zinc-600 sticky top-0">
+                      <thead className="bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 sticky top-0">
                         <tr>
                           <th className="text-left px-3 py-2 font-semibold">{t('topicWorkbench.previewName')}</th>
                           <th className="text-left px-3 py-2 font-semibold">{t('topicWorkbench.previewTopic')}</th>
@@ -2331,9 +2341,9 @@ const App: React.FC = () => {
                       </thead>
                       <tbody>
                         {topicAiDraft.topics.map((item) => (
-                          <tr key={item.id} className="border-t border-zinc-100">
-                            <td className="px-3 py-2 text-zinc-700">{item.name || '-'}</td>
-                            <td className="px-3 py-2 font-mono text-zinc-600">{item.topic}</td>
+                          <tr key={item.id} className="border-t border-zinc-100 dark:border-zinc-800">
+                            <td className="px-3 py-2 text-zinc-700 dark:text-zinc-200">{item.name || '-'}</td>
+                            <td className="px-3 py-2 font-mono text-zinc-600 dark:text-zinc-300">{item.topic}</td>
                             <td className="px-3 py-2 text-zinc-600">{t(`topicWorkbench.direction.${item.direction}`)}</td>
                             <td className="px-3 py-2 text-zinc-600">{item.qos}</td>
                           </tr>
@@ -2343,7 +2353,7 @@ const App: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <div className="px-5 py-4 border-t border-zinc-100 bg-zinc-50 flex items-center justify-end gap-2">
+              <div className="px-5 py-4 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 flex items-center justify-end gap-2">
                 <button
                   onClick={() => setTopicAiDraft(null)}
                   className="px-4 py-2 rounded-lg text-zinc-500 hover:bg-zinc-200 transition-colors text-sm font-medium"
@@ -2394,14 +2404,14 @@ const App: React.FC = () => {
             }}
           >
             <div
-              className="w-full max-w-md rounded-xl border border-zinc-200 bg-white shadow-2xl"
+              className="w-full max-w-md rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-2xl dark:shadow-black/50"
               onClick={(event) => event.stopPropagation()}
             >
               <div className="px-5 py-4 border-b border-zinc-100">
-                <h3 className="text-base font-bold text-zinc-800">{confirmDialog.title}</h3>
-                <p className="mt-1 text-sm text-zinc-500">{confirmDialog.message}</p>
+                <h3 className="text-base font-bold text-zinc-800 dark:text-zinc-50">{confirmDialog.title}</h3>
+                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{confirmDialog.message}</p>
               </div>
-              <div className="px-5 py-4 flex items-center justify-end gap-2 bg-zinc-50 rounded-b-xl">
+              <div className="px-5 py-4 flex items-center justify-end gap-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-b-xl">
                 <button
                   onClick={() => {
                     confirmDialog.resolver(false);
@@ -2416,11 +2426,10 @@ const App: React.FC = () => {
                     confirmDialog.resolver(true);
                     setConfirmDialog(null);
                   }}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors ${
-                    confirmDialog.tone === 'danger'
-                      ? 'bg-red-600 hover:bg-red-700'
-                      : 'bg-indigo-600 hover:bg-indigo-700'
-                  }`}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors ${confirmDialog.tone === 'danger'
+                    ? 'bg-red-600 hover:bg-red-700'
+                    : 'bg-indigo-600 hover:bg-indigo-700'
+                    }`}
                 >
                   {confirmDialog.confirmLabel}
                 </button>
@@ -2432,28 +2441,26 @@ const App: React.FC = () => {
 
       {activities.length > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-[128] px-4 pb-3 pointer-events-none">
-          <div className="mx-auto max-w-5xl rounded-xl border border-zinc-200/80 bg-white/95 backdrop-blur-sm shadow-lg p-2 pointer-events-auto">
+          <div className="mx-auto max-w-5xl rounded-xl border border-zinc-200/80 dark:border-zinc-700 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm shadow-lg dark:shadow-black/30 p-2 pointer-events-auto">
             <div className="flex flex-wrap gap-2">
               {activities.map((activity) => (
                 <div
                   key={activity.id}
-                  className={`min-w-[220px] max-w-[360px] flex-1 rounded-lg border px-3 py-2 ${
-                    activity.tone === 'success'
-                      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                      : activity.tone === 'error'
-                        ? 'border-red-200 bg-red-50 text-red-700'
-                        : 'border-zinc-300 bg-zinc-100 text-zinc-700'
-                  }`}
+                  className={`min-w-[220px] max-w-[360px] flex-1 rounded-lg border px-3 py-2 ${activity.tone === 'success'
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                    : activity.tone === 'error'
+                      ? 'border-red-200 bg-red-50 text-red-700'
+                      : 'border-zinc-300 bg-zinc-100 text-zinc-700'
+                    }`}
                 >
                   <div className="flex items-start gap-2">
                     <i
-                      className={`mt-0.5 ${
-                        activity.tone === 'success'
-                          ? 'fas fa-circle-check'
-                          : activity.tone === 'error'
-                            ? 'fas fa-circle-exclamation'
-                            : 'fas fa-spinner fa-spin'
-                      }`}
+                      className={`mt-0.5 ${activity.tone === 'success'
+                        ? 'fas fa-circle-check'
+                        : activity.tone === 'error'
+                          ? 'fas fa-circle-exclamation'
+                          : 'fas fa-spinner fa-spin'
+                        }`}
                     ></i>
                     <div className="min-w-0">
                       <div className="text-xs font-semibold truncate">{activity.title}</div>
@@ -2471,23 +2478,21 @@ const App: React.FC = () => {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto min-w-[260px] max-w-[360px] rounded-lg border px-3 py-2 shadow-lg backdrop-blur-sm animate-in slide-in-from-top-2 duration-200 ${
-              toast.tone === 'success'
-                ? 'bg-emerald-50/95 border-emerald-200 text-emerald-700'
-                : toast.tone === 'error'
-                  ? 'bg-red-50/95 border-red-200 text-red-700'
-                  : 'bg-zinc-100/95 border-zinc-300 text-zinc-700'
-            }`}
+            className={`pointer-events-auto min-w-[260px] max-w-[360px] rounded-lg border px-3 py-2 shadow-lg backdrop-blur-sm animate-in slide-in-from-top-2 duration-200 ${toast.tone === 'success'
+              ? 'bg-emerald-50/95 border-emerald-200 text-emerald-700'
+              : toast.tone === 'error'
+                ? 'bg-red-50/95 border-red-200 text-red-700'
+                : 'bg-zinc-100/95 border-zinc-300 text-zinc-700'
+              }`}
           >
             <div className="flex items-start gap-2">
               <i
-                className={`mt-0.5 ${
-                  toast.tone === 'success'
-                    ? 'fas fa-circle-check'
-                    : toast.tone === 'error'
-                      ? 'fas fa-circle-exclamation'
-                      : 'fas fa-circle-info'
-                }`}
+                className={`mt-0.5 ${toast.tone === 'success'
+                  ? 'fas fa-circle-check'
+                  : toast.tone === 'error'
+                    ? 'fas fa-circle-exclamation'
+                    : 'fas fa-circle-info'
+                  }`}
               ></i>
               <span className="text-sm leading-relaxed">{toast.message}</span>
             </div>

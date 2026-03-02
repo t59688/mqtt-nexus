@@ -1,20 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
-  <!-- 背景：深渊黑 -->
-  <rect width="100" height="100" rx="22" fill="#09090B" />
+  <!-- 背景：纯粹白 -->
+  <rect width="100" height="100" rx="22" fill="#FFFFFF" />
   
-  <!-- 底层连线：纯白 -->
-  <line x1="50" y1="50" x2="50" y2="12" stroke="#FFFFFF" stroke-width="3" />
-  <line x1="50" y1="50" x2="82" y2="32" stroke="#FFFFFF" stroke-width="3" />
-  <line x1="50" y1="50" x2="18" y2="78" stroke="#FFFFFF" stroke-width="3" />
+  <!-- 底层连线：石板灰 -->
+  <line x1="50" y1="50" x2="50" y2="12" stroke="#18181B" stroke-width="3" />
+  <line x1="50" y1="50" x2="82" y2="32" stroke="#18181B" stroke-width="3" />
+  <line x1="50" y1="50" x2="18" y2="78" stroke="#18181B" stroke-width="3" />
 
-  <!-- 辐射环：高亮靛蓝阶梯 (优化暗色背景对比度) -->
-  <path d="M 50 12 L 88 50 L 50 88 L 12 50 Z" fill="none" stroke="#818CF8" stroke-width="2" />
-  <path d="M 50 22 L 78 50 L 50 78 L 22 50 Z" fill="none" stroke="#6366F1" stroke-width="2" />
+  <!-- 辐射环：靛蓝阶梯 (亮色环境) -->
+  <path d="M 50 12 L 88 50 L 50 88 L 12 50 Z" fill="none" stroke="#C7D2FE" stroke-width="2" />
+  <path d="M 50 22 L 78 50 L 50 78 L 22 50 Z" fill="none" stroke="#818CF8" stroke-width="2" />
   <path d="M 50 32 L 68 50 L 50 68 L 32 50 Z" fill="none" stroke="#4F46E5" stroke-width="2" />
 
-  <!-- 核心与子节点：纯白极致焦点 -->
-  <path d="M 50 38 L 62 50 L 50 62 L 38 50 Z" fill="#FFFFFF" />
-  <path d="M 50 6 L 56 12 L 50 18 L 44 12 Z" fill="#FFFFFF" />
-  <path d="M 82 26 L 88 32 L 82 38 L 76 32 Z" fill="#FFFFFF" />
-  <path d="M 18 72 L 24 78 L 18 84 L 12 78 Z" fill="#FFFFFF" />
+  <!-- 核心与子节点：石板灰菱形切割 -->
+  <path d="M 50 38 L 62 50 L 50 62 L 38 50 Z" fill="#18181B" />
+  <path d="M 50 6 L 56 12 L 50 18 L 44 12 Z" fill="#18181B" />
+  <path d="M 82 26 L 88 32 L 82 38 L 76 32 Z" fill="#18181B" />
+  <path d="M 18 72 L 24 78 L 18 84 L 12 78 Z" fill="#18181B" />
 </svg>

@@ -86,7 +86,7 @@
     },
     themeOptions: {
       light: '浅色',
-      dark: '科技暗色',
+      dark: '暗色',
     },
     aboutModal: {
       title: '关于 NexusMQTT',

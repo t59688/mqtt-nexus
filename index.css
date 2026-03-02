@@ -2,49 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: light;
-  --app-bg: #FAFAFA;
-  --text-primary: #18181B;
-  --surface-0: #FAFAFA;
-  --surface-1: #ffffff;
-  --surface-2: #F4F4F5;
-  --border-1: #E4E4E7;
-  --border-2: #D4D4D8;
-  --ring: #4F46E5;
-  --startup-accent: #4F46E5;
-  --startup-title: #18181B;
-  --startup-subtle: #71717A;
-  --startup-track: #E4E4E7;
-  --startup-shadow: 0 30px 80px rgba(9, 9, 11, 0.08);
-}
-
-html[data-theme='dark'] {
-  color-scheme: dark;
-  --app-bg: #09090B;
-  --text-primary: #FAFAFA;
-  --surface-0: #09090B;
-  --surface-1: #18181B;
-  --surface-2: #27272A;
-  --border-1: #3F3F46;
-  --border-2: #52525B;
-  --ring: #6366F1;
-  --startup-accent: #818CF8;
-  --startup-title: #FAFAFA;
-  --startup-subtle: #A1A1AA;
-  --startup-track: #3F3F46;
-  --startup-shadow: 0 30px 90px rgba(0, 0, 0, 0.5);
-}
+/* ============================================================
+   Origami Fox — 全局基础样式
+   不含任何暗色覆写，暗色全部通过 Tailwind dark: 前缀在组件中实现
+   ============================================================ */
 
 body {
-  background-color: var(--app-bg);
-  color: var(--text-primary);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-html[data-theme='dark'] body {
-  background: var(--app-bg);
+/* 全局圆角覆写 — 4px 锐利切割 */
+.rounded-lg,
+.rounded-xl,
+.rounded-2xl,
+.rounded-3xl,
+.rounded-md {
+  border-radius: 4px !important;
 }
 
+/* 全局 Transition — 迅捷干脆 */
+button,
+a,
+input,
+select,
+textarea,
+.transition,
+.transition-all,
+.transition-colors {
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition-duration: 150ms !important;
+}
+
+/* 按钮 Active — scale(0.98) */
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* 骨架屏呼吸动效 */
+@keyframes of-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.animate-pulse {
+  animation: of-pulse 1.5s ease-in-out infinite !important;
+}
+
+/* Startup */
 .startup-screen,
 .startup-splash {
   position: fixed;
@@ -53,12 +64,6 @@ html[data-theme='dark'] body {
   display: grid;
   place-items: center;
   padding: 24px;
-  background: var(--app-bg);
-}
-
-html[data-theme='dark'] .startup-screen,
-html[data-theme='dark'] .startup-splash {
-  background: var(--app-bg);
 }
 
 .startup-screen--app {
@@ -68,24 +73,14 @@ html[data-theme='dark'] .startup-splash {
 .startup-splash.startup-splash--leave {
   opacity: 0;
   visibility: hidden;
-  transition:
-    opacity 0.32s ease,
-    visibility 0.32s ease;
+  transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
 }
 
 .startup-card {
   width: min(428px, 100%);
-  border-radius: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: var(--startup-card-bg);
+  border-radius: 4px;
   backdrop-filter: blur(12px);
   padding: 24px 22px 20px;
-  box-shadow: 0 20px 56px rgba(2, 10, 24, 0.14);
-}
-
-html[data-theme='dark'] .startup-card {
-  border-color: rgba(74, 104, 150, 0.42);
-  box-shadow: 0 20px 56px rgba(2, 10, 24, 0.56);
 }
 
 .startup-head {
@@ -98,9 +93,6 @@ html[data-theme='dark'] .startup-card {
   width: 32px;
   height: 32px;
   border-radius: 4px;
-  background: rgba(15, 23, 42, 0.88);
-  border: 1px solid rgba(115, 146, 196, 0.42);
-  box-shadow: 0 10px 24px rgba(84, 105, 255, 0.3);
   flex: 0 0 auto;
   overflow: hidden;
 }
@@ -117,165 +109,74 @@ html[data-theme='dark'] .startup-card {
   line-height: 1.2;
   letter-spacing: -0.025em;
   font-weight: 700;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  color: var(--startup-title);
 }
 
 .startup-progress-track {
   margin-top: 16px;
-  height: 4px;
+  height: 2px;
   border-radius: 999px;
-  background: rgba(148, 163, 184, 0.32);
   overflow: hidden;
-}
-
-html[data-theme='dark'] .startup-progress-track {
-  background: rgba(92, 124, 173, 0.32);
 }
 
 .startup-progress-fill {
   height: 100%;
   width: 32%;
   border-radius: inherit;
-  background: var(--startup-accent);
-  animation: startup-glide 1.24s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  animation: startup-glide 1.24s cubic-bezier(0.16, 1, 0.3, 1) infinite;
 }
 
 .startup-progress-fill--determinate {
   width: 0;
   animation: none;
-  transition: width 0.35s ease;
+  transition: width 0.3s ease-out;
 }
 
 @keyframes startup-glide {
   from {
     transform: translateX(-72%);
   }
+
   to {
     transform: translateX(272%);
   }
 }
 
 @media (max-width: 560px) {
+
   .startup-screen,
   .startup-splash {
     padding: 16px;
   }
 
   .startup-card {
-    width: min(428px, 100%);
     padding: 20px 18px 18px;
   }
 }
 
-html[data-theme='dark'] .bg-white {
-  background-color: var(--surface-1) !important;
+/* 滚动条 — 亮色 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-html[data-theme='dark'] .bg-zinc-50,
-html[data-theme='dark'] .bg-zinc-50\/30,
-html[data-theme='dark'] .bg-zinc-50\/50,
-html[data-theme='dark'] .bg-zinc-100 {
-  background-color: var(--surface-0) !important;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-html[data-theme='dark'] .bg-zinc-200 {
-  background-color: #3F3F46 !important;
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
 }
 
-html[data-theme='dark'] .bg-zinc-800 {
-  background-color: #27272A !important;
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
 }
 
-html[data-theme='dark'] .bg-zinc-900 {
-  background-color: #18181B !important;
+/* 滚动条 — 暗色 */
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
 }
 
-html[data-theme='dark'] .bg-zinc-950\/30 {
-  background-color: rgba(9, 9, 11, 0.75) !important;
-}
-
-html[data-theme='dark'] .text-zinc-900,
-html[data-theme='dark'] .text-zinc-800,
-html[data-theme='dark'] .text-zinc-700 {
-  color: #FAFAFA !important;
-}
-
-html[data-theme='dark'] .text-zinc-600 {
-  color: #D4D4D8 !important;
-}
-
-html[data-theme='dark'] .text-zinc-500 {
-  color: #A1A1AA !important;
-}
-
-html[data-theme='dark'] .text-zinc-400,
-html[data-theme='dark'] .text-zinc-300 {
-  color: #A1A1AA !important;
-}
-
-html[data-theme='dark'] .border-zinc-100,
-html[data-theme='dark'] .border-zinc-200,
-html[data-theme='dark'] .border-zinc-300 {
-  border-color: var(--border-1) !important;
-}
-
-html[data-theme='dark'] .border-zinc-700,
-html[data-theme='dark'] .border-zinc-800 {
-  border-color: var(--border-2) !important;
-}
-
-html[data-theme='dark'] .bg-indigo-50 {
-  background-color: rgba(79, 70, 229, 0.15) !important;
-}
-
-html[data-theme='dark'] .border-indigo-100,
-html[data-theme='dark'] .border-indigo-200 {
-  border-color: rgba(129, 140, 248, 0.35) !important;
-}
-
-html[data-theme='dark'] .text-indigo-600,
-html[data-theme='dark'] .text-indigo-700,
-html[data-theme='dark'] .text-indigo-800 {
-  color: #A5B4FC !important;
-}
-
-html[data-theme='dark'] .bg-emerald-50 {
-  background-color: rgba(16, 185, 129, 0.14) !important;
-}
-
-html[data-theme='dark'] .bg-red-50 {
-  background-color: rgba(239, 68, 68, 0.12) !important;
-}
-
-html[data-theme='dark'] .bg-yellow-50 {
-  background-color: rgba(245, 158, 11, 0.14) !important;
-}
-
-html[data-theme='dark'] input,
-html[data-theme='dark'] select,
-html[data-theme='dark'] textarea {
-  background-color: #18181B;
-  color: #FAFAFA;
-  border-color: var(--border-1);
-}
-
-html[data-theme='dark'] input::placeholder,
-html[data-theme='dark'] textarea::placeholder {
-  color: #71717A;
-}
-
-html[data-theme='dark'] input:focus,
-html[data-theme='dark'] select:focus,
-html[data-theme='dark'] textarea:focus {
-  outline-color: var(--ring);
-  border-color: var(--ring);
-}
-
-html[data-theme='dark'] .shadow-sm,
-html[data-theme='dark'] .shadow-md,
-html[data-theme='dark'] .shadow-lg,
-html[data-theme='dark'] .shadow-xl,
-html[data-theme='dark'] .shadow-2xl {
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
