@@ -33,17 +33,7 @@
         document.documentElement.setAttribute('lang', language === 'zh' ? 'zh-CN' : 'en');
       })();
     </script>
-    <script defer src="https://cdn.tailwindcss.com"></script>
     <link rel="preload" href="/app-icon.png" as="image" />
-    <link
-      rel="preload"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      as="style"
-      onload="this.onload=null;this.rel='stylesheet'"
-    />
-    <noscript>
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    </noscript>
     <style>
       html,
       body {
@@ -53,13 +43,13 @@
       }
 
       body {
-        background: #f8fafc;
-        color: #0f172a;
+        background: #FAFAFA;
+        color: #18181B;
       }
 
       html[data-theme='dark'] body {
-        background: #070d18;
-        color: #dbe7ff;
+        background: #09090B;
+        color: #fafafa;
       }
 
       .startup-splash {
@@ -69,33 +59,26 @@
         display: grid;
         place-items: center;
         padding: 24px;
-        background:
-          radial-gradient(880px 560px at 12% 6%, rgba(79, 122, 230, 0.16), transparent 64%),
-          radial-gradient(840px 540px at 90% 92%, rgba(20, 154, 179, 0.12), transparent 68%),
-          #f8fafc;
+        background: #FAFAFA;
       }
 
       html[data-theme='dark'] .startup-splash {
-        background:
-          radial-gradient(880px 560px at 12% 6%, rgba(79, 122, 230, 0.2), transparent 64%),
-          radial-gradient(840px 540px at 90% 92%, rgba(20, 154, 179, 0.14), transparent 68%),
-          #070d18;
+        background: #09090B;
       }
 
       .startup-card {
         width: min(428px, 100%);
         border-radius: 20px;
-        border: 1px solid rgba(148, 163, 184, 0.35);
-        background: rgba(255, 255, 255, 0.76);
-        backdrop-filter: blur(12px);
-        box-shadow: 0 20px 56px rgba(2, 10, 24, 0.14);
+        border: 1px solid #E4E4E7;
+        background: #ffffff;
+        box-shadow: 0 20px 56px rgba(9, 9, 11, 0.08);
         padding: 24px 22px 20px;
       }
 
       html[data-theme='dark'] .startup-card {
-        border-color: rgba(74, 104, 150, 0.42);
-        background: rgba(10, 20, 38, 0.7);
-        box-shadow: 0 20px 56px rgba(2, 10, 24, 0.56);
+        border-color: #3F3F46;
+        background: #18181B;
+        box-shadow: 0 20px 56px rgba(0, 0, 0, 0.4);
       }
 
       .startup-head {
@@ -108,11 +91,15 @@
         width: 32px;
         height: 32px;
         border-radius: 4px;
-        background: rgba(15, 23, 42, 0.88);
-        border: 1px solid rgba(115, 146, 196, 0.42);
-        box-shadow: 0 10px 24px rgba(84, 105, 255, 0.3);
+        background: #18181B;
+        border: 1px solid #3F3F46;
         flex: 0 0 auto;
         overflow: hidden;
+      }
+
+      html[data-theme='dark'] .startup-mark {
+        background: #27272A;
+        border-color: #52525B;
       }
 
       .startup-mark img {
@@ -128,11 +115,11 @@
         letter-spacing: -0.025em;
         font-weight: 700;
         font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-        color: #172554;
+        color: #18181B;
       }
 
       html[data-theme='dark'] .startup-name {
-        color: rgba(229, 239, 255, 0.9);
+        color: #fafafa;
       }
 
       .startup-progress-track {
@@ -140,19 +127,18 @@
         height: 4px;
         border-radius: 999px;
         overflow: hidden;
-        background: rgba(148, 163, 184, 0.32);
+        background: #E4E4E7;
       }
 
       html[data-theme='dark'] .startup-progress-track {
-        background: rgba(92, 124, 173, 0.32);
+        background: #3F3F46;
       }
 
       .startup-progress-fill {
         height: 100%;
         width: 32%;
         border-radius: inherit;
-        background: linear-gradient(90deg, #7ea1ff, #7c3aed 60%, #32c0d5);
-        box-shadow: 0 0 16px rgba(95, 141, 255, 0.5);
+        background: #4F46E5;
         animation: startup-glide 1.24s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
       }
 
@@ -171,30 +157,30 @@
       }
 
       ::-webkit-scrollbar-track {
-        background: #f1f5f9;
+        background: #F4F4F5;
       }
 
       ::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
+        background: #D4D4D8;
         border-radius: 4px;
       }
 
       ::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
+        background: #A1A1AA;
+      }
+
+      html[data-theme='dark'] ::-webkit-scrollbar-track {
+        background: #18181B;
+      }
+
+      html[data-theme='dark'] ::-webkit-scrollbar-thumb {
+        background: #3F3F46;
+      }
+
+      html[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+        background: #52525B;
       }
     </style>
-    <script>
-      window.__NEXUS_CSS_READY__ = false;
-    </script>
-    <link
-      rel="preload"
-      href="/index.css"
-      as="style"
-      onload="this.onload=null;this.rel='stylesheet';window.__NEXUS_CSS_READY__=true;window.dispatchEvent(new CustomEvent('nexus:css-ready'))"
-    />
-    <noscript>
-      <link rel="stylesheet" href="/index.css" />
-    </noscript>
   </head>
   <body class="antialiased overflow-hidden h-screen w-screen">
     <div id="startup-splash" class="startup-splash" role="status" aria-live="polite" aria-label="Loading">

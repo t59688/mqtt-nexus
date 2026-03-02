@@ -36,23 +36,23 @@ const SimpleInputModal: React.FC<SimpleInputModalProps> = ({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-            <h3 className="font-bold text-slate-800">{title}</h3>
-            <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+        <div className="px-6 py-4 border-b border-zinc-100 bg-zinc-50 flex justify-between items-center">
+            <h3 className="font-bold text-zinc-800">{title}</h3>
+            <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600">
                 <i className="fas fa-times"></i>
             </button>
         </div>
         
         <form onSubmit={handleSubmit} className="p-6">
             <div className="mb-6">
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{label}</label>
+                <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">{label}</label>
                 <input
                     ref={inputRef}
                     type="text"
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
                     list={options ? "modal-datalist" : undefined}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-700"
+                    className="w-full px-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-zinc-700"
                 />
                 {options && (
                     <datalist id="modal-datalist">
@@ -67,7 +67,7 @@ const SimpleInputModal: React.FC<SimpleInputModalProps> = ({
                 <button
                     type="button"
                     onClick={onClose}
-                    className="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors font-medium text-sm"
+                    className="px-4 py-2 text-zinc-500 hover:bg-zinc-100 rounded-lg transition-colors font-medium text-sm"
                 >
                     {t('common.cancel')}
                 </button>

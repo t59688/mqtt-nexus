@@ -7,9 +7,9 @@
   <line x1="50" y1="50" x2="82" y2="32" stroke="#FFFFFF" stroke-width="3" />
   <line x1="50" y1="50" x2="18" y2="78" stroke="#FFFFFF" stroke-width="3" />
 
-  <!-- 辐射环：暗靛蓝阶梯 -->
-  <path d="M 50 12 L 88 50 L 50 88 L 12 50 Z" fill="none" stroke="#312E81" stroke-width="2" />
-  <path d="M 50 22 L 78 50 L 50 78 L 22 50 Z" fill="none" stroke="#3730A3" stroke-width="2" />
+  <!-- 辐射环：高亮靛蓝阶梯 (优化暗色背景对比度) -->
+  <path d="M 50 12 L 88 50 L 50 88 L 12 50 Z" fill="none" stroke="#818CF8" stroke-width="2" />
+  <path d="M 50 22 L 78 50 L 50 78 L 22 50 Z" fill="none" stroke="#6366F1" stroke-width="2" />
   <path d="M 50 32 L 68 50 L 50 68 L 32 50 Z" fill="none" stroke="#4F46E5" stroke-width="2" />
 
   <!-- 核心与子节点：纯白极致焦点 -->

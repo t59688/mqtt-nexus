@@ -124,16 +124,16 @@ const HistoryExportModal: React.FC<HistoryExportModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/55 backdrop-blur-sm p-4">
-      <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+      <div className="w-full max-w-2xl rounded-2xl border border-zinc-200 bg-white shadow-2xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between">
           <div>
-            <h3 className="text-base font-bold text-slate-800">{t('messageLog.exportTitle')}</h3>
-            <p className="text-xs text-slate-500 mt-0.5">{t('messageLog.exportDescription')}</p>
+            <h3 className="text-base font-bold text-zinc-800">{t('messageLog.exportTitle')}</h3>
+            <p className="text-xs text-zinc-500 mt-0.5">{t('messageLog.exportDescription')}</p>
           </div>
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="text-slate-400 hover:text-slate-600 disabled:opacity-50"
+            className="text-zinc-400 hover:text-zinc-600 disabled:opacity-50"
           >
             <i className="fas fa-times text-lg"></i>
           </button>
@@ -142,21 +142,21 @@ const HistoryExportModal: React.FC<HistoryExportModalProps> = ({
         <div className="px-5 py-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
             <div className="md:col-span-1">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">
+              <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">
                 {t('messageLog.exportFormat')}
               </label>
               <select
                 value={format}
                 disabled={isSubmitting}
                 onChange={(event) => setFormat(event.target.value as HistoryExportFormat)}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-zinc-300 rounded-lg px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="ndjson">NDJSON</option>
                 <option value="csv">CSV</option>
               </select>
             </div>
             <div className="md:col-span-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">
+              <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">
                 {t('messageLog.exportPath')}
               </label>
               <div className="flex gap-2">
@@ -165,7 +165,7 @@ const HistoryExportModal: React.FC<HistoryExportModalProps> = ({
                   value={outputPath}
                   disabled={isSubmitting}
                   onChange={(event) => setOutputPath(event.target.value)}
-                  className="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-indigo-500"
+                  className="flex-1 border border-zinc-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-indigo-500"
                   placeholder={t('messageLog.exportPathPlaceholder')}
                 />
                 <button
@@ -173,7 +173,7 @@ const HistoryExportModal: React.FC<HistoryExportModalProps> = ({
                     void handleBrowse();
                   }}
                   disabled={isSubmitting}
-                  className="px-3 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-300 transition-colors disabled:opacity-50"
+                  className="px-3 py-2 bg-zinc-200 text-zinc-700 rounded-lg text-sm font-semibold hover:bg-zinc-300 transition-colors disabled:opacity-50"
                 >
                   {t('messageLog.browsePath')}
                 </button>
@@ -182,7 +182,7 @@ const HistoryExportModal: React.FC<HistoryExportModalProps> = ({
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">
+            <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2 block">
               {t('messageLog.rangePreset')}
             </label>
             <div className="flex flex-wrap gap-2">
@@ -194,7 +194,7 @@ const HistoryExportModal: React.FC<HistoryExportModalProps> = ({
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
                     preset === item.key
                       ? 'bg-indigo-600 border-indigo-600 text-white'
-                      : 'bg-white border-slate-300 text-slate-600 hover:border-indigo-400 hover:text-indigo-600'
+                      : 'bg-white border-zinc-300 text-zinc-600 hover:border-indigo-400 hover:text-indigo-600'
                   }`}
                 >
                   {item.label}
@@ -206,7 +206,7 @@ const HistoryExportModal: React.FC<HistoryExportModalProps> = ({
           {preset === 'custom' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">
+                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">
                   {t('messageLog.fromTime')}
                 </label>
                 <input
@@ -214,11 +214,11 @@ const HistoryExportModal: React.FC<HistoryExportModalProps> = ({
                   value={customFrom}
                   disabled={isSubmitting}
                   onChange={(event) => setCustomFrom(event.target.value)}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                  className="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm"
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">
+                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1 block">
                   {t('messageLog.toTime')}
                 </label>
                 <input
@@ -226,18 +226,18 @@ const HistoryExportModal: React.FC<HistoryExportModalProps> = ({
                   value={customTo}
                   disabled={isSubmitting}
                   onChange={(event) => setCustomTo(event.target.value)}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                  className="w-full border border-zinc-300 rounded-lg px-3 py-2 text-sm"
                 />
               </div>
             </div>
           )}
         </div>
 
-        <div className="px-5 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
+        <div className="px-5 py-4 bg-zinc-50 border-t border-zinc-100 flex justify-end gap-2">
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-4 py-2 rounded-lg text-slate-500 hover:bg-slate-200 transition-colors text-sm font-medium disabled:opacity-50"
+            className="px-4 py-2 rounded-lg text-zinc-500 hover:bg-zinc-200 transition-colors text-sm font-medium disabled:opacity-50"
           >
             {t('common.cancel')}
           </button>
@@ -246,7 +246,7 @@ const HistoryExportModal: React.FC<HistoryExportModalProps> = ({
               void handleSubmit();
             }}
             disabled={isSubmitting || !outputPath.trim()}
-            className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-zinc-300 disabled:cursor-not-allowed"
           >
             {isSubmitting ? t('messageLog.exporting') : t('messageLog.startExport')}
           </button>

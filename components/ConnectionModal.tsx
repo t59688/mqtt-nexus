@@ -141,11 +141,11 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
-        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
-          <h2 className="text-xl font-bold text-slate-800">
+        <div className="flex items-center justify-between border-b border-zinc-200 bg-zinc-50 px-6 py-4">
+          <h2 className="text-xl font-bold text-zinc-800">
             {initialProfile ? t('connectionModal.editTitle') : t('connectionModal.newTitle')}
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600">
             <i className="fas fa-times text-xl"></i>
           </button>
         </div>
@@ -153,9 +153,9 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
         <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-white">
           <div className="grid grid-cols-12 gap-8">
             <div className="col-span-12 md:col-span-7 space-y-6">
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 relative group">
+              <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-200 relative group">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">{t('connectionModal.brokerConfig')}</label>
+                  <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">{t('connectionModal.brokerConfig')}</label>
                   <button onClick={() => onOpenSettings('brokers')} className="text-[10px] text-indigo-600 font-bold hover:underline">
                     {t('connectionModal.manageLibrary')}
                   </button>
@@ -163,9 +163,9 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
 
                 <div className="flex gap-2 mb-3">
                   <div className="relative flex-1">
-                    <i className="fas fa-server absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <i className="fas fa-server absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"></i>
                     <select
-                      className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 appearance-none"
+                      className="w-full pl-9 pr-3 py-2 border border-zinc-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 appearance-none"
                       value={profile.brokerId || 'custom'}
                       onChange={(e) => selectBroker(e.target.value)}
                     >
@@ -187,7 +187,7 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
                       name="protocol"
                       value={profile.protocol}
                       onChange={handleLinkChange}
-                      className="px-2 py-1.5 bg-slate-100 border border-slate-300 border-r-0 rounded-l-md text-slate-600 text-xs"
+                      className="px-2 py-1.5 bg-zinc-100 border border-zinc-300 border-r-0 rounded-l-md text-zinc-600 text-xs"
                     >
                       <option value="mqtt">mqtt://</option>
                       <option value="mqtts">mqtts://</option>
@@ -199,39 +199,39 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
                       name="host"
                       value={profile.host}
                       onChange={handleLinkChange}
-                      className="flex-1 px-3 py-1.5 border border-slate-300 rounded-r-md text-slate-700 font-mono"
+                      className="flex-1 px-3 py-1.5 border border-zinc-300 rounded-r-md text-zinc-700 font-mono"
                       placeholder={t('connectionModal.placeholders.host')}
                     />
                   </div>
                   <div className="relative">
-                    <span className="absolute left-2 top-1.5 text-slate-400 text-xs font-bold">{t('connectionModal.port')}</span>
+                    <span className="absolute left-2 top-1.5 text-zinc-400 text-xs font-bold">{t('connectionModal.port')}</span>
                     <input
                       type="number"
                       name="port"
                       value={profile.port}
                       onChange={handleLinkChange}
-                      className="w-full border border-slate-300 rounded-md pl-12 pr-2 py-1.5 text-right font-mono"
+                      className="w-full border border-zinc-300 rounded-md pl-12 pr-2 py-1.5 text-right font-mono"
                     />
                   </div>
                   <div className="relative">
-                    <span className="absolute left-2 top-1.5 text-slate-400 text-xs font-bold">{t('connectionModal.path')}</span>
+                    <span className="absolute left-2 top-1.5 text-zinc-400 text-xs font-bold">{t('connectionModal.path')}</span>
                     <input
                       type="text"
                       name="path"
                       value={profile.path || ''}
                       onChange={handleLinkChange}
-                      className="w-full border border-slate-300 rounded-md pl-12 pr-2 py-1.5 text-right font-mono"
+                      className="w-full border border-zinc-300 rounded-md pl-12 pr-2 py-1.5 text-right font-mono"
                       placeholder={isWsProtocol ? t('connectionModal.placeholders.wsMountPath') : t('connectionModal.placeholders.pathTcp')}
                       disabled={!isWsProtocol}
                     />
                   </div>
                   <div className="col-span-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">{t('connectionModal.mqttVersion')}</label>
+                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1 block">{t('connectionModal.mqttVersion')}</label>
                     <select
                       name="protocolVersion"
                       value={profile.protocolVersion || 4}
                       onChange={handleLinkChange}
-                      className="w-full border border-slate-300 rounded-md px-3 py-1.5 bg-white"
+                      className="w-full border border-zinc-300 rounded-md px-3 py-1.5 bg-white"
                     >
                       <option value={3}>3.0</option>
                       <option value={4}>3.1.1</option>
@@ -246,18 +246,18 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
                 )}
               </div>
 
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-200">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">{t('connectionModal.authIdentity')}</label>
+                  <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">{t('connectionModal.authIdentity')}</label>
                   <button onClick={() => onOpenSettings('identities')} className="text-[10px] text-indigo-600 font-bold hover:underline">
                     {t('connectionModal.manageLibrary')}
                   </button>
                 </div>
                 <div className="flex gap-2 mb-3">
                   <div className="relative flex-1">
-                    <i className="fas fa-id-card absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <i className="fas fa-id-card absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"></i>
                     <select
-                      className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 appearance-none"
+                      className="w-full pl-9 pr-3 py-2 border border-zinc-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 appearance-none"
                       value={profile.identityId || 'custom'}
                       onChange={(e) => selectIdentity(e.target.value)}
                     >
@@ -276,43 +276,43 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
                 <div className={`space-y-3 text-sm ${profile.identityId ? 'opacity-70 pointer-events-none' : ''}`}>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[10px] font-bold text-slate-400 block mb-1">{t('connectionModal.username')}</label>
+                      <label className="text-[10px] font-bold text-zinc-400 block mb-1">{t('connectionModal.username')}</label>
                       <input
                         type="text"
                         name="username"
                         value={profile.username || ''}
                         onChange={handleLinkChange}
-                        className="border border-slate-300 rounded-md px-3 py-1.5 w-full"
+                        className="border border-zinc-300 rounded-md px-3 py-1.5 w-full"
                         placeholder={t('common.optional')}
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-slate-400 block mb-1">{t('connectionModal.password')}</label>
+                      <label className="text-[10px] font-bold text-zinc-400 block mb-1">{t('connectionModal.password')}</label>
                       <input
                         type="password"
                         name="password"
                         value={profile.password || ''}
                         onChange={handleLinkChange}
-                        className="border border-slate-300 rounded-md px-3 py-1.5 w-full"
+                        className="border border-zinc-300 rounded-md px-3 py-1.5 w-full"
                         placeholder={t('common.optional')}
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-3 pt-3 border-t border-slate-200">
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">{t('connectionModal.clientIdUnique')}</label>
+                <div className="mt-3 pt-3 border-t border-zinc-200">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase mb-1">{t('connectionModal.clientIdUnique')}</label>
                   <div className="flex gap-2">
                     <input
                       type="text"
                       name="clientId"
                       value={profile.clientId}
                       onChange={handleLinkChange}
-                      className="flex-1 border border-slate-300 rounded-md px-3 py-1.5 font-mono text-sm"
+                      className="flex-1 border border-zinc-300 rounded-md px-3 py-1.5 font-mono text-sm"
                     />
                     <button
                       onClick={() => setProfile((p) => ({ ...p, clientId: `nexus-${Math.random().toString(16).substring(2, 10)}` }))}
-                      className="px-3 bg-slate-200 rounded-md hover:bg-slate-300 text-slate-600"
+                      className="px-3 bg-zinc-200 rounded-md hover:bg-zinc-300 text-zinc-600"
                     >
                       <i className="fas fa-random"></i>
                     </button>
@@ -328,7 +328,7 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
                 </h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-1">{t('connectionModal.displayName')}</label>
+                    <label className="block text-sm font-bold text-zinc-700 mb-1">{t('connectionModal.displayName')}</label>
                     <input
                       type="text"
                       name="name"
@@ -339,7 +339,7 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-1">{t('connectionModal.groupFolder')}</label>
+                    <label className="block text-sm font-bold text-zinc-700 mb-1">{t('connectionModal.groupFolder')}</label>
                     <input
                       type="text"
                       name="group"
@@ -352,7 +352,7 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
                     <datalist id="groups-list">{existingGroups.map((g) => <option key={g} value={g} />)}</datalist>
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">{t('connectionModal.colorTag')}</label>
+                    <label className="block text-sm font-bold text-zinc-700 mb-2">{t('connectionModal.colorTag')}</label>
                     <div className="flex gap-2 flex-wrap bg-white p-3 rounded-lg border border-indigo-100">
                       {Object.entries(TAG_COLORS).map(([name, bgClass]) => (
                         <button
@@ -373,7 +373,7 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
                       onChange={handleLinkChange}
                       className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
                     />
-                    <span className="text-sm font-medium text-slate-700">{t('connectionModal.cleanSession')}</span>
+                    <span className="text-sm font-medium text-zinc-700">{t('connectionModal.cleanSession')}</span>
                   </div>
                 </div>
               </div>
@@ -381,8 +381,8 @@ const ConnectionModal: React.FC<ConnectionModalProps> = ({
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 px-6 py-4 bg-slate-50 border-t border-slate-200">
-          <button onClick={onClose} className="px-4 py-2 text-slate-500 hover:text-slate-800 font-medium">
+        <div className="flex justify-end gap-3 px-6 py-4 bg-zinc-50 border-t border-zinc-200">
+          <button onClick={onClose} className="px-4 py-2 text-zinc-500 hover:text-zinc-800 font-medium">
             {t('common.cancel')}
           </button>
           <button

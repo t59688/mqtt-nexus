@@ -788,17 +788,17 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
     : null;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 h-full overflow-hidden flex flex-col">
-      <div className="px-3 py-2.5 border-b border-slate-100 bg-slate-50/60 space-y-2">
+    <div className="bg-white rounded-xl shadow-sm border border-zinc-200 h-full overflow-hidden flex flex-col">
+      <div className="px-3 py-2.5 border-b border-zinc-100 bg-zinc-50/60 space-y-2">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
+          <h3 className="text-sm font-bold text-zinc-700 flex items-center gap-2">
             <i className="fas fa-diagram-project text-indigo-500"></i>
             {t('topicWorkbench.title')}
           </h3>
           <div className="flex items-center gap-1">
             <button
               onClick={onImport}
-              className="px-2 py-1 text-xs rounded border border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
+              className="px-2 py-1 text-xs rounded border border-zinc-200 text-zinc-600 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
             >
               <i className="fas fa-file-import mr-1"></i>
               {t('common.import')}
@@ -809,7 +809,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
               className={`px-2 py-1 text-xs rounded border transition-colors ${
                 isAiImporting
                   ? 'border-indigo-200 bg-indigo-50 text-indigo-400 cursor-not-allowed'
-                  : 'border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600'
+                  : 'border-zinc-200 text-zinc-600 hover:border-indigo-300 hover:text-indigo-600'
               }`}
             >
               <i className={`mr-1 ${isAiImporting ? 'fas fa-spinner fa-spin' : 'fas fa-wand-magic-sparkles'}`}></i>
@@ -817,7 +817,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
             </button>
             <button
               onClick={onExport}
-              className="px-2 py-1 text-xs rounded border border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
+              className="px-2 py-1 text-xs rounded border border-zinc-200 text-zinc-600 hover:border-indigo-300 hover:text-indigo-600 transition-colors"
             >
               <i className="fas fa-file-export mr-1"></i>
               {t('common.export')}
@@ -834,18 +834,18 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div className="relative">
-            <i className="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <i className="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 text-xs"></i>
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder={t('topicWorkbench.searchPlaceholder')}
-              className="w-full pl-7 pr-2 py-1.5 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500"
+              className="w-full pl-7 pr-2 py-1.5 text-xs border border-zinc-200 rounded focus:ring-1 focus:ring-indigo-500"
             />
           </div>
           <select
             value={directionFilter}
             onChange={(event) => setDirectionFilter(event.target.value as 'all' | TopicDirection)}
-            className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 bg-white"
+            className="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded focus:ring-1 focus:ring-indigo-500 bg-white"
           >
             {directionOrder.map((direction) => (
               <option key={direction} value={direction}>
@@ -857,9 +857,9 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
       </div>
 
       <div className="flex-1 min-h-0 grid grid-cols-1 xl:grid-cols-12">
-        <div className="xl:col-span-5 border-r border-slate-100 overflow-y-auto custom-scrollbar">
+        <div className="xl:col-span-5 border-r border-zinc-100 overflow-y-auto custom-scrollbar">
           {filteredTopics.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center px-4 text-center text-slate-400">
+            <div className="h-full flex flex-col items-center justify-center px-4 text-center text-zinc-400">
               <i className="fas fa-inbox text-3xl mb-2"></i>
               <p className="text-sm">{t('topicWorkbench.empty')}</p>
             </div>
@@ -885,7 +885,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                   className={`w-full text-left p-1.5 rounded-lg border transition-all ${
                     item.id === activeTopic?.id
                       ? 'border-indigo-300 bg-indigo-50/70'
-                      : 'border-slate-100 bg-white hover:bg-slate-50'
+                      : 'border-zinc-100 bg-white hover:bg-zinc-50'
                   }`}
                 >
                   {autoPublishStatusMap[getAutoPublishTaskId(connectionId, item.id)] && (
@@ -900,13 +900,13 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                     </div>
                   )}
                   <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-xs font-semibold text-slate-700 truncate">{item.name || item.topic}</span>
-                    <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200">
+                    <span className="text-xs font-semibold text-zinc-700 truncate">{item.name || item.topic}</span>
+                    <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-500 border border-zinc-200">
                       {t(`topicWorkbench.badge.${item.direction}`)}
                     </span>
                   </div>
-                  <div className="text-[11px] font-mono text-slate-500 truncate">{item.topic || '-'}</div>
-                  <div className="mt-1 text-[10px] text-slate-400 flex items-center gap-2">
+                  <div className="text-[11px] font-mono text-zinc-500 truncate">{item.topic || '-'}</div>
+                  <div className="mt-1 text-[10px] text-zinc-400 flex items-center gap-2">
                     <span>QoS {item.qos}</span>
                     {item.retain && <span>{t('publisher.retain')}</span>}
                   </div>
@@ -918,13 +918,13 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
 
         <div className="xl:col-span-7 overflow-y-auto custom-scrollbar p-2.5 space-y-2">
           {!activeTopic ? (
-            <div className="h-full flex items-center justify-center text-slate-400 text-sm">
+            <div className="h-full flex items-center justify-center text-zinc-400 text-sm">
               {t('topicWorkbench.selectTopic')}
             </div>
           ) : (
             <>
               <div className="flex items-center justify-between gap-2">
-                <div className="text-xs text-slate-500 font-mono truncate">
+                <div className="text-xs text-zinc-500 font-mono truncate">
                   {activeTopic.topic || t('topicWorkbench.topicPlaceholder')}
                 </div>
                 <button
@@ -943,13 +943,13 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                   value={activeTopic.name}
                   onChange={(event) => updateActiveTopic({ name: event.target.value })}
                   placeholder={t('topicWorkbench.namePlaceholder')}
-                  className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500"
+                  className="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded focus:ring-1 focus:ring-indigo-500"
                 />
                 <input
                   value={activeTopic.topic}
                   onChange={(event) => updateActiveTopic({ topic: event.target.value })}
                   placeholder={t('topicWorkbench.topicPlaceholder')}
-                  className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 font-mono"
+                  className="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded focus:ring-1 focus:ring-indigo-500 font-mono"
                 />
               </div>
 
@@ -957,7 +957,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                 <select
                   value={activeTopic.direction}
                   onChange={(event) => updateActiveTopic({ direction: event.target.value as TopicDirection })}
-                  className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 bg-white"
+                  className="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded focus:ring-1 focus:ring-indigo-500 bg-white"
                 >
                   <option value="publish">{t('topicWorkbench.direction.publish')}</option>
                   <option value="subscribe">{t('topicWorkbench.direction.subscribe')}</option>
@@ -966,7 +966,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                 <select
                   value={activeTopic.qos}
                   onChange={(event) => updateActiveTopic({ qos: Number(event.target.value) as 0 | 1 | 2 })}
-                  className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 bg-white"
+                  className="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded focus:ring-1 focus:ring-indigo-500 bg-white"
                 >
                   <option value="0">{t('publisher.qosLabels.q0')}</option>
                   <option value="1">{t('publisher.qosLabels.q1')}</option>
@@ -979,9 +979,9 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                   value={activeTopic.contentType || ''}
                   onChange={(event) => updateActiveTopic({ contentType: event.target.value })}
                   placeholder={t('topicWorkbench.contentType')}
-                  className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500"
+                  className="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded focus:ring-1 focus:ring-indigo-500"
                 />
-                <label className="text-xs text-slate-600 flex items-center gap-2 border border-slate-200 rounded px-2">
+                <label className="text-xs text-zinc-600 flex items-center gap-2 border border-zinc-200 rounded px-2">
                   <input
                     type="checkbox"
                     checked={activeTopic.retain}
@@ -1003,25 +1003,25 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                   })
                 }
                 placeholder={t('topicWorkbench.tagsPlaceholder')}
-                className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500"
+                className="w-full px-2 py-1.5 text-xs border border-zinc-200 rounded focus:ring-1 focus:ring-indigo-500"
               />
 
               <textarea
                 value={activeTopic.description || ''}
                 onChange={(event) => updateActiveTopic({ description: event.target.value })}
                 placeholder={t('topicWorkbench.descriptionPlaceholder')}
-                className="w-full min-h-[64px] px-2 py-1.5 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 resize-y"
+                className="w-full min-h-[64px] px-2 py-1.5 text-xs border border-zinc-200 rounded focus:ring-1 focus:ring-indigo-500 resize-y"
               />
 
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] uppercase tracking-wide text-slate-500 font-semibold">
+                  <label className="text-[11px] uppercase tracking-wide text-zinc-500 font-semibold">
                     {t('topicWorkbench.payloadTemplate')}
                   </label>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => normalizeJsonField('payloadTemplate')}
-                      className="text-[10px] text-slate-500 hover:text-indigo-600"
+                      className="text-[10px] text-zinc-500 hover:text-indigo-600"
                     >
                       {t('topicWorkbench.formatJson')}
                     </button>
@@ -1040,18 +1040,18 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                   value={activeTopic.payloadTemplate || ''}
                   onChange={(event) => updateActiveTopic({ payloadTemplate: event.target.value })}
                   placeholder={t('publisher.payloadPlaceholder')}
-                  className="w-full min-h-[110px] px-2 py-1.5 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 resize-y font-mono"
+                  className="w-full min-h-[110px] px-2 py-1.5 text-xs border border-zinc-200 rounded focus:ring-1 focus:ring-indigo-500 resize-y font-mono"
                 />
               </div>
 
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] uppercase tracking-wide text-slate-500 font-semibold">
+                  <label className="text-[11px] uppercase tracking-wide text-zinc-500 font-semibold">
                     {t('topicWorkbench.payloadExample')}
                   </label>
                   <button
                     onClick={() => normalizeJsonField('payloadExample')}
-                    className="text-[10px] text-slate-500 hover:text-indigo-600"
+                    className="text-[10px] text-zinc-500 hover:text-indigo-600"
                   >
                     {t('topicWorkbench.formatJson')}
                   </button>
@@ -1060,18 +1060,18 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                   value={activeTopic.payloadExample || ''}
                   onChange={(event) => updateActiveTopic({ payloadExample: event.target.value })}
                   placeholder={t('publisher.payloadPlaceholder')}
-                  className="w-full min-h-[90px] px-2 py-1.5 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 resize-y font-mono"
+                  className="w-full min-h-[90px] px-2 py-1.5 text-xs border border-zinc-200 rounded focus:ring-1 focus:ring-indigo-500 resize-y font-mono"
                 />
               </div>
 
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] uppercase tracking-wide text-slate-500 font-semibold">
+                  <label className="text-[11px] uppercase tracking-wide text-zinc-500 font-semibold">
                     {t('topicWorkbench.schema')}
                   </label>
                   <button
                     onClick={() => normalizeJsonField('schema')}
-                    className="text-[10px] text-slate-500 hover:text-indigo-600"
+                    className="text-[10px] text-zinc-500 hover:text-indigo-600"
                   >
                     {t('topicWorkbench.formatJson')}
                   </button>
@@ -1080,7 +1080,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                   value={activeTopic.schema || ''}
                   onChange={(event) => updateActiveTopic({ schema: event.target.value })}
                   placeholder='{ "type": "object" }'
-                  className="w-full min-h-[80px] px-2 py-1.5 text-xs border border-slate-200 rounded focus:ring-1 focus:ring-indigo-500 resize-y font-mono"
+                  className="w-full min-h-[80px] px-2 py-1.5 text-xs border border-zinc-200 rounded focus:ring-1 focus:ring-indigo-500 resize-y font-mono"
                 />
               </div>
 
@@ -1089,7 +1089,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                   onClick={() => publishFromField('payloadTemplate')}
                   disabled={!canPublish || !isConnected}
                   title={t('topicWorkbench.publishTemplate')}
-                  className="px-2 py-1.5 text-xs rounded bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-slate-300 inline-flex items-center justify-center min-w-[2.25rem]"
+                  className="px-2 py-1.5 text-xs rounded bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-zinc-300 inline-flex items-center justify-center min-w-[2.25rem]"
                 >
                   <i className="fas fa-paper-plane" aria-hidden></i>
                 </button>
@@ -1097,7 +1097,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                   onClick={() => publishFromField('payloadExample')}
                   disabled={!canPublish || !isConnected}
                   title={t('topicWorkbench.publishExample')}
-                  className="px-2 py-1.5 text-xs rounded bg-slate-700 hover:bg-slate-800 text-white disabled:bg-slate-300 inline-flex items-center justify-center min-w-[2.25rem]"
+                  className="px-2 py-1.5 text-xs rounded bg-zinc-700 hover:bg-zinc-800 text-white disabled:bg-zinc-300 inline-flex items-center justify-center min-w-[2.25rem]"
                 >
                   <i className="fas fa-vial" aria-hidden></i>
                 </button>
@@ -1105,7 +1105,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                   onClick={toggleSubscribe}
                   disabled={!canSubscribe || !isConnected}
                   title={isSubscribed ? t('subscription.unsubscribe') : t('subscription.title')}
-                  className={`px-2 py-1.5 text-xs rounded text-white disabled:bg-slate-300 inline-flex items-center justify-center min-w-[2.25rem] ${
+                  className={`px-2 py-1.5 text-xs rounded text-white disabled:bg-zinc-300 inline-flex items-center justify-center min-w-[2.25rem] ${
                     isSubscribed ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'
                   }`}
                 >
@@ -1114,25 +1114,25 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
               </div>
 
               {subscriptions.length > 0 && (
-                <div className="border border-slate-100 rounded-lg p-1.5 bg-slate-50/60">
-                  <div className="text-[11px] font-semibold text-slate-500 uppercase mb-1 tracking-wide">
+                <div className="border border-zinc-100 rounded-lg p-1.5 bg-zinc-50/60">
+                  <div className="text-[11px] font-semibold text-zinc-500 uppercase mb-1 tracking-wide">
                     {t('topicWorkbench.activeSubscriptions')}
                   </div>
                   <div className="space-y-1 max-h-32 overflow-y-auto custom-scrollbar">
                     {subscriptions.map((sub) => (
                       <div key={sub.topic} className="flex items-center justify-between gap-2 text-xs">
-                        <span className="font-mono text-slate-600 truncate">{sub.topic}</span>
+                        <span className="font-mono text-zinc-600 truncate">{sub.topic}</span>
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => onToggleMute(sub.topic)}
-                            className="text-slate-400 hover:text-indigo-600 px-1"
+                            className="text-zinc-400 hover:text-indigo-600 px-1"
                             title={sub.muted ? t('subscription.unmute') : t('subscription.mute')}
                           >
                             <i className={`fas ${sub.muted ? 'fa-eye-slash' : 'fa-eye'}`}></i>
                           </button>
                           <button
                             onClick={() => onUnsubscribe(sub.topic)}
-                            className="text-slate-400 hover:text-red-600 px-1"
+                            className="text-zinc-400 hover:text-red-600 px-1"
                             title={t('subscription.unsubscribe')}
                           >
                             <i className="fas fa-trash-alt"></i>
@@ -1154,19 +1154,19 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
           onClick={() => setAutoPublishDialog(null)}
         >
           <div
-            className="w-full max-w-md rounded-xl border border-slate-200 bg-white shadow-xl"
+            className="w-full max-w-md rounded-xl border border-zinc-200 bg-white shadow-xl"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="px-4 py-3 border-b border-slate-100">
-              <h4 className="text-sm font-bold text-slate-800">{t('topicWorkbench.autoPublish.title')}</h4>
-              <p className="text-xs text-slate-500 mt-1">
+            <div className="px-4 py-3 border-b border-zinc-100">
+              <h4 className="text-sm font-bold text-zinc-800">{t('topicWorkbench.autoPublish.title')}</h4>
+              <p className="text-xs text-zinc-500 mt-1">
                 {topics.find((item) => item.id === autoPublishDialog.topicId)?.name ||
                   topics.find((item) => item.id === autoPublishDialog.topicId)?.topic}
               </p>
             </div>
             <div className="p-4 space-y-3">
               <label className="block">
-                <span className="text-xs font-medium text-slate-600">{t('topicWorkbench.autoPublish.intervalLabel')}</span>
+                <span className="text-xs font-medium text-zinc-600">{t('topicWorkbench.autoPublish.intervalLabel')}</span>
                 <input
                   type="number"
                   min={1}
@@ -1176,13 +1176,13 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                       prev ? { ...prev, intervalSeconds: event.target.value } : prev
                     )
                   }
-                  className="mt-1 w-full rounded border border-slate-200 px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500"
+                  className="mt-1 w-full rounded border border-zinc-200 px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500"
                 />
               </label>
 
               <div className="space-y-1.5">
-                <span className="text-xs font-medium text-slate-600">{t('topicWorkbench.autoPublish.stopModeLabel')}</span>
-                <label className="flex items-center gap-2 text-xs text-slate-700">
+                <span className="text-xs font-medium text-zinc-600">{t('topicWorkbench.autoPublish.stopModeLabel')}</span>
+                <label className="flex items-center gap-2 text-xs text-zinc-700">
                   <input
                     type="radio"
                     name="auto-publish-stop-mode"
@@ -1195,7 +1195,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                   />
                   {t('topicWorkbench.autoPublish.stopModeManual')}
                 </label>
-                <label className="flex items-center gap-2 text-xs text-slate-700">
+                <label className="flex items-center gap-2 text-xs text-zinc-700">
                   <input
                     type="radio"
                     name="auto-publish-stop-mode"
@@ -1219,10 +1219,10 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                       )
                     }
                     placeholder={t('topicWorkbench.autoPublish.countLabel')}
-                    className="w-full rounded border border-slate-200 px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded border border-zinc-200 px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500"
                   />
                 )}
-                <label className="flex items-center gap-2 text-xs text-slate-700">
+                <label className="flex items-center gap-2 text-xs text-zinc-700">
                   <input
                     type="radio"
                     name="auto-publish-stop-mode"
@@ -1238,7 +1238,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                 {autoPublishDialog.stopMode === 'until' && (
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[11px] text-slate-500">{t('topicWorkbench.autoPublish.quickPresetLabel')}</span>
+                      <span className="text-[11px] text-zinc-500">{t('topicWorkbench.autoPublish.quickPresetLabel')}</span>
                       <div className="flex items-center gap-1">
                         {AUTO_PUBLISH_UNTIL_PRESETS_MINUTES.map((minutes) => (
                           <button
@@ -1251,7 +1251,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                                   : prev
                               )
                             }
-                            className="px-1.5 py-0.5 rounded border border-slate-200 text-[10px] text-slate-600 hover:border-indigo-300 hover:text-indigo-600"
+                            className="px-1.5 py-0.5 rounded border border-zinc-200 text-[10px] text-zinc-600 hover:border-indigo-300 hover:text-indigo-600"
                           >
                             {t('topicWorkbench.autoPublish.quickPresetMinutes', { minutes })}
                           </button>
@@ -1268,17 +1268,17 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                             prev ? { ...prev, untilLocal: event.target.value } : prev
                           )
                         }
-                        className="w-full rounded border border-slate-200 px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500"
+                        className="w-full rounded border border-zinc-200 px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500"
                       />
                     </label>
                   </div>
                 )}
               </div>
             </div>
-            <div className="px-4 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-2">
+            <div className="px-4 py-3 border-t border-zinc-100 bg-zinc-50 flex items-center justify-end gap-2">
               <button
                 onClick={() => setAutoPublishDialog(null)}
-                className="px-3 py-1.5 rounded border border-slate-200 text-xs text-slate-600 hover:bg-slate-100"
+                className="px-3 py-1.5 rounded border border-zinc-200 text-xs text-zinc-600 hover:bg-zinc-100"
               >
                 {t('common.cancel')}
               </button>
@@ -1295,7 +1295,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
 
       {topicContextMenu && contextMenuTopic && topicContextActions.length > 0 && topicMenuPosition && (
         <div
-          className="fixed z-[70] min-w-[140px] w-auto rounded-lg border border-slate-200 bg-white p-1 shadow-2xl shadow-slate-900/15"
+          className="fixed z-[70] min-w-[140px] w-auto rounded-lg border border-zinc-200 bg-white p-1 shadow-2xl shadow-zinc-900/15"
           style={{ left: topicMenuPosition.left, top: topicMenuPosition.top }}
           onClick={(event) => event.stopPropagation()}
           onContextMenu={(event) => {
@@ -1314,7 +1314,7 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                     ? 'text-cyan-600'
                     : action.key === 'publishTemplate'
                     ? 'text-indigo-500'
-                    : 'text-slate-500';
+                    : 'text-zinc-500';
 
             return (
               <button
@@ -1328,15 +1328,15 @@ const TopicWorkbench: React.FC<TopicWorkbenchProps> = ({
                   setTopicContextMenu(null);
                 }}
                 className={`flex items-center gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors w-full ${
-                  needsDivider ? 'mt-1 pt-2 border-t border-slate-100' : ''
+                  needsDivider ? 'mt-1 pt-2 border-t border-zinc-100' : ''
                 } ${
                   action.disabled
-                    ? 'text-slate-300 cursor-not-allowed'
-                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                    ? 'text-zinc-300 cursor-not-allowed'
+                    : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900'
                 }`}
               >
-                <span className="w-4 flex-shrink-0 text-[10px] text-slate-400">{index + 1}.</span>
-                <i className={`fas ${action.icon} w-3 flex-shrink-0 text-center ${action.disabled ? 'text-slate-300' : iconToneClass}`}></i>
+                <span className="w-4 flex-shrink-0 text-[10px] text-zinc-400">{index + 1}.</span>
+                <i className={`fas ${action.icon} w-3 flex-shrink-0 text-center ${action.disabled ? 'text-zinc-300' : iconToneClass}`}></i>
                 <span className="whitespace-nowrap flex-shrink-0">{action.label}</span>
               </button>
             );

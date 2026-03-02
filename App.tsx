@@ -1946,19 +1946,19 @@ const App: React.FC = () => {
     : 'mqtt';
 
   return (
-    <div className="flex h-screen bg-slate-100 font-sans text-slate-900" onClick={() => setContextMenu(null)}>
+    <div className="flex h-screen bg-zinc-100 font-sans text-zinc-900" onClick={() => setContextMenu(null)}>
       {contextMenu && (
         <div
-          className="fixed z-50 bg-white rounded-lg shadow-xl border border-slate-200 py-1 min-w-[180px] animate-in fade-in zoom-in duration-100 origin-top-left"
+          className="fixed z-50 bg-white rounded-lg shadow-xl border border-zinc-200 py-1 min-w-[180px] animate-in fade-in zoom-in duration-100 origin-top-left"
           style={{ top: contextMenu.y, left: contextMenu.x }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="px-3 py-2 border-b border-slate-100 mb-1">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{connections[contextMenu.id]?.profile.name}</span>
+          <div className="px-3 py-2 border-b border-zinc-100 mb-1">
+            <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">{connections[contextMenu.id]?.profile.name}</span>
           </div>
 
           <button
-            className="w-full text-left px-4 py-2 hover:bg-slate-50 text-sm text-slate-700 hover:text-indigo-600 flex items-center gap-2"
+            className="w-full text-left px-4 py-2 hover:bg-zinc-50 text-sm text-zinc-700 hover:text-indigo-600 flex items-center gap-2"
             onClick={() => {
               setQuickAction({ type: 'rename', id: contextMenu.id });
               setContextMenu(null);
@@ -1968,7 +1968,7 @@ const App: React.FC = () => {
           </button>
 
           <button
-            className="w-full text-left px-4 py-2 hover:bg-slate-50 text-sm text-slate-700 hover:text-indigo-600 flex items-center gap-2"
+            className="w-full text-left px-4 py-2 hover:bg-zinc-50 text-sm text-zinc-700 hover:text-indigo-600 flex items-center gap-2"
             onClick={() => {
               setQuickAction({ type: 'group', id: contextMenu.id });
               setContextMenu(null);
@@ -1977,10 +1977,10 @@ const App: React.FC = () => {
             <i className="fas fa-folder w-4 text-center"></i> {t('app.context.moveToGroup')}
           </button>
 
-          <div className="border-t border-slate-100 my-1"></div>
+          <div className="border-t border-zinc-100 my-1"></div>
 
           <button
-            className="w-full text-left px-4 py-2 hover:bg-slate-50 text-sm text-slate-700 hover:text-indigo-600 flex items-center gap-2"
+            className="w-full text-left px-4 py-2 hover:bg-zinc-50 text-sm text-zinc-700 hover:text-indigo-600 flex items-center gap-2"
             onClick={() => {
               cloneConnection(null, connections[contextMenu.id].profile);
               setContextMenu(null);
@@ -1990,7 +1990,7 @@ const App: React.FC = () => {
           </button>
 
           <button
-            className="w-full text-left px-4 py-2 hover:bg-slate-50 text-sm text-slate-700 hover:text-indigo-600 flex items-center gap-2"
+            className="w-full text-left px-4 py-2 hover:bg-zinc-50 text-sm text-zinc-700 hover:text-indigo-600 flex items-center gap-2"
             onClick={() => {
               setEditingProfile(connections[contextMenu.id].profile);
               setIsModalOpen(true);
@@ -2000,7 +2000,7 @@ const App: React.FC = () => {
             <i className="fas fa-cog w-4 text-center"></i> {t('app.context.editConfiguration')}
           </button>
 
-          <div className="border-t border-slate-100 my-1"></div>
+          <div className="border-t border-zinc-100 my-1"></div>
 
           <button
             className="w-full text-left px-4 py-2 hover:bg-red-50 text-sm text-red-600 flex items-center gap-2"
@@ -2015,7 +2015,7 @@ const App: React.FC = () => {
       )}
 
       <div
-        className={`${sidebarOpen ? 'w-64' : 'w-0 opacity-0'} bg-slate-900 flex flex-col border-r border-slate-800 shrink-0 shadow-2xl z-20 transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap`}
+        className={`${sidebarOpen ? 'w-64' : 'w-0 opacity-0'} bg-zinc-900 flex flex-col border-r border-zinc-800 shrink-0 shadow-2xl z-20 transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap`}
         onMouseDownCapture={() => {
           sidebarHotkeyScopeRef.current = true;
         }}
@@ -2023,7 +2023,7 @@ const App: React.FC = () => {
           sidebarHotkeyScopeRef.current = true;
         }}
       >
-        <div className="p-4 flex items-center justify-between border-b border-slate-800 bg-slate-950/30">
+        <div className="p-4 flex items-center justify-between border-b border-zinc-800 bg-zinc-950/30">
           <div className="flex items-center gap-3">
             <img src="/app-icon.png" alt="" className="w-8 h-8 rounded object-cover shadow-lg shadow-indigo-500/20" />
             <h1 className="text-lg font-bold text-white tracking-tight">NexusMQTT</h1>
@@ -2031,25 +2031,25 @@ const App: React.FC = () => {
           <button onClick={() => {
             sidebarHotkeyScopeRef.current = false;
             setSidebarOpen(false);
-          }} className="text-slate-500 hover:text-slate-200 transition-colors">
+          }} className="text-zinc-500 hover:text-zinc-200 transition-colors">
             <i className="fas fa-angle-left text-lg"></i>
           </button>
         </div>
 
-        <div className="p-2.5 border-b border-slate-800 bg-slate-900 sticky top-0 z-10">
+        <div className="p-2.5 border-b border-zinc-800 bg-zinc-900 sticky top-0 z-10">
           <div className="relative">
-            <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
-            <input type="text" placeholder={t('app.searchConnections')} className="w-full bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" value={connectionSearch} onChange={e => setConnectionSearch(e.target.value)} />
+            <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-sm"></i>
+            <input type="text" placeholder={t('app.searchConnections')} className="w-full bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" value={connectionSearch} onChange={e => setConnectionSearch(e.target.value)} />
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto py-2 space-y-1 custom-scrollbar">
           {sortedGroupNames.map(groupName => (
             <div key={groupName} className="mb-2">
-              <div onClick={() => setExpandedGroups(prev => ({ ...prev, [groupName]: !prev[groupName] }))} className="px-3 py-1.5 flex items-center gap-2 cursor-pointer hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 transition-colors select-none group">
+              <div onClick={() => setExpandedGroups(prev => ({ ...prev, [groupName]: !prev[groupName] }))} className="px-3 py-1.5 flex items-center gap-2 cursor-pointer hover:bg-zinc-800/50 text-zinc-400 hover:text-zinc-200 transition-colors select-none group">
                 <i className={`fas fa-chevron-right text-[10px] transition-transform duration-200 ${expandedGroups[groupName] ? 'rotate-90' : ''}`}></i>
                 <span className="text-xs font-bold uppercase tracking-wider flex-1">{displayGroupName(groupName)}</span>
-                <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-500">{groupedConnections[groupName].length}</span>
+                <span className="text-[10px] bg-zinc-800 px-1.5 py-0.5 rounded-full text-zinc-500">{groupedConnections[groupName].length}</span>
               </div>
               {expandedGroups[groupName] && (
                 <div className="space-y-0.5 mt-1">
@@ -2076,26 +2076,26 @@ const App: React.FC = () => {
           ))}
         </div>
 
-        <div className="p-3 border-t border-slate-800 bg-slate-950/30 space-y-2">
+        <div className="p-3 border-t border-zinc-800 bg-zinc-950/30 space-y-2">
           <button onClick={() => { setEditingProfile(undefined); setIsModalOpen(true); }} className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg font-semibold text-sm">
             <i className="fas fa-plus"></i> {t('app.addConnection')}
           </button>
 
           <button
             onClick={() => setIsAboutOpen(true)}
-            className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg flex items-center justify-center gap-2 transition-all font-semibold text-sm border border-slate-700"
+            className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-lg flex items-center justify-center gap-2 transition-all font-semibold text-sm border border-zinc-700"
           >
             <i className="fas fa-circle-info"></i> {t('app.about')}
           </button>
 
-          <button onClick={() => openSettings('general')} className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg flex items-center justify-center gap-2 transition-all font-semibold text-sm border border-slate-700">
+          <button onClick={() => openSettings('general')} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-lg flex items-center justify-center gap-2 transition-all font-semibold text-sm border border-zinc-700">
             <i className="fas fa-cog"></i> {t('app.settings')}
           </button>
         </div>
       </div>
 
       <div
-        className="flex-1 flex flex-col overflow-hidden relative bg-slate-50"
+        className="flex-1 flex flex-col overflow-hidden relative bg-zinc-50"
         onMouseDownCapture={() => {
           sidebarHotkeyScopeRef.current = false;
         }}
@@ -2105,23 +2105,23 @@ const App: React.FC = () => {
       >
         {activeConnection ? (
           <>
-            <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-5 shadow-sm z-10 flex-shrink-0">
+            <header className="h-16 bg-white border-b border-zinc-200 flex items-center justify-between px-4 lg:px-5 shadow-sm z-10 flex-shrink-0">
               <div className="flex items-center gap-4 overflow-hidden">
                 {!sidebarOpen && (
-                  <button onClick={() => setSidebarOpen(true)} className="text-slate-400 hover:text-indigo-600 transition-colors mr-2">
+                  <button onClick={() => setSidebarOpen(true)} className="text-zinc-400 hover:text-indigo-600 transition-colors mr-2">
                     <i className="fas fa-bars text-lg"></i>
                   </button>
                 )}
                 <div className="flex flex-col">
-                  <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 truncate">
+                  <h2 className="text-lg font-bold text-zinc-800 flex items-center gap-2 truncate">
                     {activeConnection.profile.name}
                     <span className={`text-[10px] px-2 py-0.5 rounded uppercase tracking-wide border ${protocolBadgeStylesLight[activeProtocol]}`}>
                       {activeProtocol}
                     </span>
                     {activeConnection.profile.brokerId && <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 rounded uppercase tracking-wide border border-indigo-100">{t('app.linked')}</span>}
                   </h2>
-                  <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
-                    <i className={`fas fa-circle text-[8px] ${activeConnection.status === 'connected' ? 'text-emerald-500' : 'text-slate-300'}`}></i>
+                  <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono">
+                    <i className={`fas fa-circle text-[8px] ${activeConnection.status === 'connected' ? 'text-emerald-500' : 'text-zinc-300'}`}></i>
                     <span>
                       {activeConnection.profile.brokerId
                         ? (brokers.find(b => b.id === activeConnection.profile.brokerId)?.host || activeConnection.profile.host)
@@ -2129,8 +2129,8 @@ const App: React.FC = () => {
                     </span>
                   </div>
                 </div>
-                <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border flex items-center gap-2 ${activeConnection.status === 'connected' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : activeConnection.status === 'error' ? 'bg-red-50 text-red-600 border-red-200' : activeConnection.status === 'connecting' ? 'bg-yellow-50 text-yellow-600 border-yellow-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
-                  <span className={`w-2 h-2 rounded-full ${activeConnection.status === 'connected' ? 'bg-emerald-500' : activeConnection.status === 'error' ? 'bg-red-500' : activeConnection.status === 'connecting' ? 'bg-yellow-500 animate-pulse' : 'bg-slate-400'}`}></span>
+                <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border flex items-center gap-2 ${activeConnection.status === 'connected' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : activeConnection.status === 'error' ? 'bg-red-50 text-red-600 border-red-200' : activeConnection.status === 'connecting' ? 'bg-yellow-50 text-yellow-600 border-yellow-200' : 'bg-zinc-100 text-zinc-500 border-zinc-200'}`}>
+                  <span className={`w-2 h-2 rounded-full ${activeConnection.status === 'connected' ? 'bg-emerald-500' : activeConnection.status === 'error' ? 'bg-red-500' : activeConnection.status === 'connecting' ? 'bg-yellow-500 animate-pulse' : 'bg-zinc-400'}`}></span>
                   {t(`status.${activeConnection.status}`)}
                 </div>
               </div>
@@ -2193,15 +2193,15 @@ const App: React.FC = () => {
             </main>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-slate-400 bg-slate-50/50 relative">
+          <div className="flex-1 flex flex-col items-center justify-center text-zinc-400 bg-zinc-50/50 relative">
             {!sidebarOpen && (
-              <button onClick={() => setSidebarOpen(true)} className="absolute top-4 left-6 text-slate-400 hover:text-indigo-600 transition-colors p-2">
+              <button onClick={() => setSidebarOpen(true)} className="absolute top-4 left-6 text-zinc-400 hover:text-indigo-600 transition-colors p-2">
                 <i className="fas fa-bars text-xl"></i>
               </button>
             )}
-            <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm border border-slate-100"><i className="fas fa-network-wired text-4xl text-indigo-200"></i></div>
-            <h2 className="text-2xl font-bold text-slate-700 mb-2">{t('app.welcomeTitle')}</h2>
-            <p className="max-w-md text-center text-slate-500">
+            <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm border border-zinc-100"><i className="fas fa-network-wired text-4xl text-indigo-200"></i></div>
+            <h2 className="text-2xl font-bold text-zinc-700 mb-2">{t('app.welcomeTitle')}</h2>
+            <p className="max-w-md text-center text-zinc-500">
               {welcomeDescriptionLines.map((line, index) => (
                 <React.Fragment key={`${line}-${index}`}>
                   {line}
@@ -2209,7 +2209,7 @@ const App: React.FC = () => {
                 </React.Fragment>
               ))}
             </p>
-            <div className="text-sm text-slate-400 mt-4 bg-slate-100 px-4 py-2 rounded-lg font-mono">
+            <div className="text-sm text-zinc-400 mt-4 bg-zinc-100 px-4 py-2 rounded-lg font-mono">
               <i className="fas fa-keyboard mr-2"></i> {t('app.tip')}
             </div>
             <button onClick={() => { setEditingProfile(undefined); setIsModalOpen(true); }} className="mt-8 px-8 py-3 bg-white border border-indigo-200 text-indigo-600 hover:border-indigo-300 hover:shadow-lg hover:-translate-y-0.5 rounded-xl font-bold transition-all flex items-center gap-2"><i className="fas fa-plus text-indigo-500"></i> {t('app.createFirstConnection')}</button>
@@ -2299,12 +2299,12 @@ const App: React.FC = () => {
             onClick={() => setTopicAiDraft(null)}
           >
             <div
-              className="w-full max-w-4xl max-h-[88vh] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl flex flex-col"
+              className="w-full max-w-4xl max-h-[88vh] overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-2xl flex flex-col"
               onClick={(event) => event.stopPropagation()}
             >
-              <div className="px-5 py-4 border-b border-slate-100">
-                <h3 className="text-base font-bold text-slate-800">{t('topicWorkbench.aiImportPreviewTitle')}</h3>
-                <p className="mt-1 text-sm text-slate-500">
+              <div className="px-5 py-4 border-b border-zinc-100">
+                <h3 className="text-base font-bold text-zinc-800">{t('topicWorkbench.aiImportPreviewTitle')}</h3>
+                <p className="mt-1 text-sm text-zinc-500">
                   {t('topicWorkbench.aiImportPreviewDesc', {
                     name: topicAiDraft.connectionName,
                     file: topicAiDraft.sourceName,
@@ -2318,10 +2318,10 @@ const App: React.FC = () => {
                     {topicAiDraft.summary}
                   </div>
                 )}
-                <div className="rounded-lg border border-slate-200 overflow-hidden">
+                <div className="rounded-lg border border-zinc-200 overflow-hidden">
                   <div className="max-h-[52vh] overflow-auto">
                     <table className="w-full text-xs">
-                      <thead className="bg-slate-50 text-slate-600 sticky top-0">
+                      <thead className="bg-zinc-50 text-zinc-600 sticky top-0">
                         <tr>
                           <th className="text-left px-3 py-2 font-semibold">{t('topicWorkbench.previewName')}</th>
                           <th className="text-left px-3 py-2 font-semibold">{t('topicWorkbench.previewTopic')}</th>
@@ -2331,11 +2331,11 @@ const App: React.FC = () => {
                       </thead>
                       <tbody>
                         {topicAiDraft.topics.map((item) => (
-                          <tr key={item.id} className="border-t border-slate-100">
-                            <td className="px-3 py-2 text-slate-700">{item.name || '-'}</td>
-                            <td className="px-3 py-2 font-mono text-slate-600">{item.topic}</td>
-                            <td className="px-3 py-2 text-slate-600">{t(`topicWorkbench.direction.${item.direction}`)}</td>
-                            <td className="px-3 py-2 text-slate-600">{item.qos}</td>
+                          <tr key={item.id} className="border-t border-zinc-100">
+                            <td className="px-3 py-2 text-zinc-700">{item.name || '-'}</td>
+                            <td className="px-3 py-2 font-mono text-zinc-600">{item.topic}</td>
+                            <td className="px-3 py-2 text-zinc-600">{t(`topicWorkbench.direction.${item.direction}`)}</td>
+                            <td className="px-3 py-2 text-zinc-600">{item.qos}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -2343,10 +2343,10 @@ const App: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <div className="px-5 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-2">
+              <div className="px-5 py-4 border-t border-zinc-100 bg-zinc-50 flex items-center justify-end gap-2">
                 <button
                   onClick={() => setTopicAiDraft(null)}
-                  className="px-4 py-2 rounded-lg text-slate-500 hover:bg-slate-200 transition-colors text-sm font-medium"
+                  className="px-4 py-2 rounded-lg text-zinc-500 hover:bg-zinc-200 transition-colors text-sm font-medium"
                 >
                   {t('common.cancel')}
                 </button>
@@ -2394,20 +2394,20 @@ const App: React.FC = () => {
             }}
           >
             <div
-              className="w-full max-w-md rounded-xl border border-slate-200 bg-white shadow-2xl"
+              className="w-full max-w-md rounded-xl border border-zinc-200 bg-white shadow-2xl"
               onClick={(event) => event.stopPropagation()}
             >
-              <div className="px-5 py-4 border-b border-slate-100">
-                <h3 className="text-base font-bold text-slate-800">{confirmDialog.title}</h3>
-                <p className="mt-1 text-sm text-slate-500">{confirmDialog.message}</p>
+              <div className="px-5 py-4 border-b border-zinc-100">
+                <h3 className="text-base font-bold text-zinc-800">{confirmDialog.title}</h3>
+                <p className="mt-1 text-sm text-zinc-500">{confirmDialog.message}</p>
               </div>
-              <div className="px-5 py-4 flex items-center justify-end gap-2 bg-slate-50 rounded-b-xl">
+              <div className="px-5 py-4 flex items-center justify-end gap-2 bg-zinc-50 rounded-b-xl">
                 <button
                   onClick={() => {
                     confirmDialog.resolver(false);
                     setConfirmDialog(null);
                   }}
-                  className="px-4 py-2 rounded-lg text-slate-500 hover:bg-slate-200 transition-colors text-sm font-medium"
+                  className="px-4 py-2 rounded-lg text-zinc-500 hover:bg-zinc-200 transition-colors text-sm font-medium"
                 >
                   {confirmDialog.cancelLabel}
                 </button>
@@ -2432,7 +2432,7 @@ const App: React.FC = () => {
 
       {activities.length > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-[128] px-4 pb-3 pointer-events-none">
-          <div className="mx-auto max-w-5xl rounded-xl border border-slate-200/80 bg-white/95 backdrop-blur-sm shadow-lg p-2 pointer-events-auto">
+          <div className="mx-auto max-w-5xl rounded-xl border border-zinc-200/80 bg-white/95 backdrop-blur-sm shadow-lg p-2 pointer-events-auto">
             <div className="flex flex-wrap gap-2">
               {activities.map((activity) => (
                 <div
@@ -2442,7 +2442,7 @@ const App: React.FC = () => {
                       ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                       : activity.tone === 'error'
                         ? 'border-red-200 bg-red-50 text-red-700'
-                        : 'border-slate-300 bg-slate-100 text-slate-700'
+                        : 'border-zinc-300 bg-zinc-100 text-zinc-700'
                   }`}
                 >
                   <div className="flex items-start gap-2">
@@ -2476,7 +2476,7 @@ const App: React.FC = () => {
                 ? 'bg-emerald-50/95 border-emerald-200 text-emerald-700'
                 : toast.tone === 'error'
                   ? 'bg-red-50/95 border-red-200 text-red-700'
-                  : 'bg-slate-100/95 border-slate-300 text-slate-700'
+                  : 'bg-zinc-100/95 border-zinc-300 text-zinc-700'
             }`}
           >
             <div className="flex items-start gap-2">

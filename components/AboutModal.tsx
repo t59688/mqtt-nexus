@@ -60,15 +60,15 @@ const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
       void openExternalUrl(url);
     };
 
-  const cardBaseClass = 'h-fit rounded-xl border border-slate-200 bg-white p-4 shadow-sm';
-  const labelClass = 'text-[11px] font-bold uppercase tracking-wider text-slate-500';
+  const cardBaseClass = 'h-fit rounded-xl border border-zinc-200 bg-white p-4 shadow-sm';
+  const labelClass = 'text-[11px] font-bold uppercase tracking-wider text-zinc-500';
   const secondaryActionClass =
-    'inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:border-indigo-400 hover:text-indigo-600';
+    'inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-600 transition-colors hover:border-indigo-400 hover:text-indigo-600';
   const getCopyActionClass = (key: 'author' | 'repo') =>
     `inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${
       copiedKey === key
         ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-        : 'border-slate-300 bg-white text-slate-600 hover:border-indigo-400 hover:text-indigo-600'
+        : 'border-zinc-300 bg-white text-zinc-600 hover:border-indigo-400 hover:text-indigo-600'
     }`;
 
   return (
@@ -77,24 +77,24 @@ const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-4xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl animate-in fade-in zoom-in duration-200"
+        className="relative w-full max-w-4xl overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-2xl animate-in fade-in zoom-in duration-200"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-indigo-50 via-white to-cyan-50"></div>
 
-        <div className="relative flex items-start justify-between border-b border-slate-200 bg-slate-50/80 px-6 py-5">
+        <div className="relative flex items-start justify-between border-b border-zinc-200 bg-zinc-50/80 px-6 py-5">
           <div className="flex items-start gap-3">
             <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-lg border border-indigo-100 bg-indigo-50 text-indigo-600">
               <i className="fas fa-circle-info text-sm"></i>
             </div>
             <div>
-              <h3 className="text-lg font-bold tracking-tight text-slate-800">{t('app.aboutModal.title')}</h3>
-              <p className="mt-1 text-sm text-slate-500">{t('app.aboutModal.subtitle')}</p>
+              <h3 className="text-lg font-bold tracking-tight text-zinc-800">{t('app.aboutModal.title')}</h3>
+              <p className="mt-1 text-sm text-zinc-500">{t('app.aboutModal.subtitle')}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-white hover:text-slate-600"
+            className="rounded-lg p-1 text-zinc-400 transition-colors hover:bg-white hover:text-zinc-600"
             aria-label={t('app.aboutModal.close')}
           >
             <i className="fas fa-times text-lg"></i>
@@ -102,12 +102,12 @@ const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         <div className="relative space-y-5 px-6 py-6">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 sm:p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <div className="mx-auto flex h-24 w-24 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white p-3 sm:mx-0">
+              <div className="mx-auto flex h-24 w-24 shrink-0 items-center justify-center rounded-xl border border-zinc-200 bg-white p-3 sm:mx-0">
                 <img src={foxEmblem} alt={t('app.aboutModal.title')} className="h-16 w-16 object-contain" />
               </div>
-              <div className="space-y-2 text-sm leading-relaxed text-slate-600">
+              <div className="space-y-2 text-sm leading-relaxed text-zinc-600">
                 <p className={labelClass}>{t('settingsModal.aboutSection')}</p>
                 <p>{t('app.aboutModal.tagline')}</p>
               </div>
@@ -117,10 +117,10 @@ const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
           <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
             <div className={cardBaseClass}>
               <div className="mb-2 flex items-center gap-2">
-                <i className="fas fa-user text-xs text-slate-400"></i>
+                <i className="fas fa-user text-xs text-zinc-400"></i>
                 <p className={labelClass}>{t('settingsModal.authorLabel')}</p>
               </div>
-              <div className="text-sm font-semibold text-slate-700 break-all">{authorName}</div>
+              <div className="text-sm font-semibold text-zinc-700 break-all">{authorName}</div>
               <div className="mt-4 flex flex-wrap gap-2">
                 {authorUrl && (
                   <a
@@ -154,10 +154,10 @@ const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
                 <i className="fab fa-weixin text-sm text-emerald-500"></i>
                 <p className={labelClass}>{t('settingsModal.wechatLabel')}</p>
               </div>
-              <div className="text-sm font-semibold text-slate-700 break-all">{wechatName}</div>
+              <div className="text-sm font-semibold text-zinc-700 break-all">{wechatName}</div>
               <div className="mt-4 flex justify-center">
-                <div className="rounded-xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-2">
-                  <div className="rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+                <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-2">
+                  <div className="rounded-lg border border-zinc-200 bg-white p-1 shadow-sm">
                     <img
                       src={wechatQrCodeUrl}
                       alt={`${wechatName} QR Code`}
@@ -172,7 +172,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
 
             <div className={cardBaseClass}>
               <div className="mb-2 flex items-center gap-2">
-                <i className="fab fa-github text-sm text-slate-500"></i>
+                <i className="fab fa-github text-sm text-zinc-500"></i>
                 <p className={labelClass}>{t('settingsModal.openSourceLabel')}</p>
               </div>
               <div className="text-sm font-medium text-indigo-600 break-all">{shortOpenSource}</div>
@@ -200,10 +200,10 @@ const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        <div className="relative flex flex-col-reverse gap-2 border-t border-slate-200 bg-slate-50 px-6 py-4 sm:flex-row sm:justify-end">
+        <div className="relative flex flex-col-reverse gap-2 border-t border-zinc-200 bg-zinc-50 px-6 py-4 sm:flex-row sm:justify-end">
           <button
             onClick={onClose}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:border-slate-400 hover:text-slate-800"
+            className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-600 transition-colors hover:border-zinc-400 hover:text-zinc-800"
           >
             {t('app.aboutModal.close')}
           </button>

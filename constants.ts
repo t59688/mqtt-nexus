@@ -108,7 +108,7 @@ export const TAG_COLORS: Record<string, string> = {
   blue: 'bg-blue-500',
   indigo: 'bg-indigo-500',
   purple: 'bg-purple-500',
-  slate: 'bg-slate-500',
+  zinc: 'bg-zinc-500',
 };
 
 export const getRandomColor = () => COLORS[Math.floor(Math.random() * COLORS.length)];
